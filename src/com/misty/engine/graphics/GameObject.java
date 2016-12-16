@@ -12,20 +12,56 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	protected int z;//used for rendering order
 	protected float dx, dy;
 	protected Bitmap bm;
+	protected int width, height;
 	protected Shape shape;//used for collision detection
-	protected float rotation;
+	protected float rotation = 0;
+	protected float scale = 1;
 	protected float rotationPivotX = 0.5f, roationPivotY = 0.5f;//0-1, 0 being top/left and 1 being bottom/right
+	
 	public abstract void draw(Renderer r);
 	
 	public abstract void update();
 	
+	/**
+	 * Sets the position of the gameobject
+	 * @param x
+	 * @param y
+	 */
 	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}
 	
+	/**
+	 * Sets the pivot of rotation of the gameobject
+	 * @param rpx (0,1), 0 being left, 1 being right
+	 * @param rpy (0,1), 0 being top, 1 being bottom
+	 */
+	public void setPivot(float rpx, float rpy) {
+		this.rotationPivotX = rpx;
+		this.roationPivotY = rpy;
+	}
+	
+	/**
+	 * sets the z position, for rendering order
+	 * @param z
+	 */
 	public void setZ(int z) {
 		this.z = z;
+	}
+	
+	public void setRotation(float rot) {
+		rotation  = rot;
+	}
+	public void setScale(float s) {
+		scale  = s;
+	}
+	public float getScale() {
+		return scale;
+	}
+
+	public float getRotation() {
+		return rotation;
 	}
 	
 	@Override
@@ -43,5 +79,15 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 		float dis = (mmx-omx)*(mmx-omx) + (mmy-omy)*(mmy-omy);
 		float biggestR = (float)( Math.max(Math.max(m.getWidth(), m.getHeight()), Math.max(o.getWidth(), o.getHeight())));
 		return dis <= biggestR * biggestR;
+	}
+
+	/**
+	 * checks if a point in contained in this object
+	 * @param x
+	 * @param y
+	 * @return true if it contains the point x, y
+	 */
+	public boolean containsPoint(int x, int y) {
+		return x >= x && x < x + width && y >= y && y < y + height;
 	}
 }

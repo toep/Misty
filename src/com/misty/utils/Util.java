@@ -131,12 +131,13 @@ public class Util {
 
 			for (int j = 0; j < cur.getHeight(); j++) {
 				for (int i = 0; i < cur.getWidth(); i++) {
-					pix[j * cur.getWidth() + i] = bm.pixels[index + i];
+					int pi = bm.pixels[index + i];
+					pix[j * cur.getWidth() + i] = pi;
 				}
 				index += bm.getWidth();
 			}
-			cur.prepDataArray();
 			result[ii] = cur;
+			result[ii].determineTransparency();
 		}
 
 		return result;

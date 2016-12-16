@@ -25,8 +25,15 @@ public class Animation extends GameObject {
 		startTime = System.currentTimeMillis();
 		setupShape();
 	}
-	public Animation(String string, int i, int j) throws IOException {
-		this(Util.bitmapsFromSheet(Util.createBitmapFromFile(string), i, j));
+	/**
+	 * 
+	 * @param string location of your image file
+	 * @param w width of each frame in the animation
+	 * @param h height of each frame in the animation
+	 * @throws IOException if file not found
+	 */
+	public Animation(String string, int w, int h) throws IOException {
+		this(Util.bitmapsFromSheet(Util.createBitmapFromFile(string), w, h));
 	}
 	private void setupShape() {
 		Point[] pts = Util.makePoly(bm, 10, 20);
@@ -72,16 +79,9 @@ public class Animation extends GameObject {
 		bm = frames[index];
 	}
 
-	public void draw(Renderer g, int x, int y, float scale) {
-		g.drawBitmap(bm, x, y, scale);
-	}
-	public void drawRotated(Renderer g, int x, int y, float rot) {
-		g.draw(this, x, y, rot, 1f);
-	}
-
 	@Override
 	public void draw(Renderer r) {
-		r.drawBitmap(bm, (int)x, (int)y);
+		r.draw(this, (int)x, (int)y, rotation, scale);
 	}
 
 	@Override

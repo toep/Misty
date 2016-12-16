@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 public class Packet {
 	public byte id;
-	public short size;
+	public int size;
 	public byte[] data;
 	ByteBuffer buffer;
 
@@ -13,25 +13,25 @@ public class Packet {
 		buffer = ByteBuffer.wrap(data);
 	}
 
-	public Packet(byte id, short s, byte[] payload) {
-		this(s+3);
+	public Packet(byte id, int s, byte[] payload) {
+		this(s+5);
 		this.id = id;
 		this.size = s;
 		put(id);
-		putShort(s);
+		putInt(s);
 		put(payload);
 		
 	}
 	public void toPayload() {
-		buffer.position(3);
+		buffer.position(5);
 	}
 
 	public Packet(int i, int j) {
-		this(j+3);
+		this(j+5);
 		this.id = (byte)i;
-		this.size = (short)j;
+		this.size = j;
 		put(id);
-		putShort(size);
+		putInt(size);
 	}
 
 	public void putString(String str) {
@@ -68,6 +68,12 @@ public class Packet {
 	public void putFloat(float i) {
 		assert(buffer.remaining() >= 4);
 		buffer.putFloat(i);
+	}
+	
+	public void putIntArray(int[] arr) {
+		for(int i = 0; i < arr.length; i++) {
+			buffer.putInt(arr[i]);
+		}
 	}
 	
 	public void put(byte b) {
@@ -109,8 +115,15 @@ public class Packet {
 		return buffer.getFloat();
 	}
 	
-	public boolean putBoolean() {
+	public boolean getBoolean() {
 		return buffer.get() == 1;
+	}
+	public int[] getIntArray(int count) {
+		int[] res = new int[count];
+		for(int i = 0; i < count; i++) {
+			res[i] = buffer.getInt();
+		}
+		return res;
 	}
 
 	

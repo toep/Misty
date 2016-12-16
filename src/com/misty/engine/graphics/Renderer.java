@@ -1,26 +1,30 @@
 package com.misty.engine.graphics;
 
-import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 
+import javax.swing.JPanel;
+
 import com.misty.engine.Game;
 import com.misty.engine.Particle;
 import com.misty.engine.graphics.font.Font;
 import com.misty.utils.Util;
 
-public class Renderer extends Canvas {
+public class Renderer extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private BufferedImage image;
 	private int[] pixels;
 	private int[] clearPixels;
 	private int width, height;
+	private int scale;
 	int tick = 0;
-//	private static String fontLegend = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"#$%&'()*+,-./:;<=>?[\\]^_|@ ";
+	// private static String fontLegend =
+	// "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"#$%&'()*+,-./:;<=>?[\\]^_|@
+	// ";
 	private Graphics g;
 	public static final int RENDERING_MODE_NORMAL = 0;
 	public static final int RENDERING_MODE_MULTIPLY = 1;
@@ -28,15 +32,39 @@ public class Renderer extends Canvas {
 	private int clearColor = 0xff000000;
 	private Font font;
 
+	
+	
+	
+	
 	public void setRenderingMode(int r) {
 		renderingMode = r;
 	}
+
+	/**
+	 * sets the current font used by renderer
+	 * @param a Font you wish to use
+	 */
 	public void setFont(Font a) {
 		font = a;
 	}
+	/**
+	 * 
+	 * @return the current font being used
+	 */
+	public Font getCurrentFont() {
+		return font;
+	}
 
-	public Renderer(int w, int h) {
-		setSize(new Dimension(w, h));
+	/**
+	 * sets up the renderer with specified dimensions
+	 * @param w width in pixels
+	 * @param h height in pixels
+	 * @param scale scale it should be drawn in. scale = 2 means each pixel will be a 2x2 box
+	 */
+	public Renderer(int w, int h, int scale) {
+		// setPreferredSize(preferredSize);
+		setPreferredSize(new Dimension(w*scale, h*scale));
+		this.scale = scale;
 		this.width = w;
 		this.height = h;
 		image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -46,19 +74,53 @@ public class Renderer extends Canvas {
 		clearPixels = new int[pixels.length];
 		Arrays.fill(clearPixels, clearColor);
 	}
-
-	public void setClearColor(int color) {
-		Arrays.fill(clearPixels, color);
+	/**
+	 * sets up the renderer with specified dimensions with scale at 1
+	 * @param w width in pixels
+	 * @param h height in pixels
+	 */
+	public Renderer(int w, int h) {
+		this(w, h, 1);
 	}
 
+	
+	
 	public void draw() {
 		render();
 	}
 
-	public void drawString(String str, int x, int y) {
+	/**
+	 * renders the pixels to screen
+	 */
+	public void render() {
+
+		if (g == null)
+			g = getGraphics();
+		g.drawImage(image, 0, 0, width*scale, height*scale, null);
+
+		// paintImmediately(0, 0, width, height);
+	}
+
+	/**
+	 * draws a string to pixel array in a white color with scale 1
+	 * @param str the string being drawn
+	 * @param xf x position
+	 * @param yf y position
+	 */
+	public void drawString(String str, float xf, float yf) {
+		int x = (int) xf;
+		int y = (int) yf;
 		drawString(str, x, y, 0xff000000, 1.0f);
 	}
 
+	/**
+	 * draws a string to pixel array in specified color and scale
+	 * @param str string being drawn
+	 * @param x pos
+	 * @param y pos
+	 * @param color in 0xaarrggbb format
+	 * @param scale
+	 */
 	public void drawString(String str, int x, int y, int color, float scale) {
 		int row = 0;
 		int j = 0;
@@ -72,7 +134,8 @@ public class Renderer extends Canvas {
 			} else {
 				if ((x + (8 * scale) * j) > width)
 					break;
-				drawChar(str.charAt(i), (int) (x + (font.getWidth() * scale) * j), y + (int) (row * (font.getHeight()+2) * scale), color, scale);
+				drawChar(str.charAt(i), (int) (x + (font.getWidth() * scale) * j),
+						y + (int) (row * (font.getHeight() + 2) * scale), color, scale);
 				// drawBitmap(font[fontLegend.indexOf(str.charAt(i))], (int) (x
 				// + (8 * scale) * j), y + row * 10, scale, color);
 				j++;
@@ -101,7 +164,7 @@ public class Renderer extends Canvas {
 	}
 
 	private void drawChar(char c, int x, int y, int color, float scale) {
-		Bitmap bm = font.getFontChar(c);	
+		Bitmap bm = font.getFontChar(c);
 		if (bm == null || x + bm.getWidth() * scale < 0 || y + bm.getHeight() * scale < 0 || x > width || y > height)
 			return;
 		int i = 0;
@@ -121,6 +184,7 @@ public class Renderer extends Canvas {
 			}
 			startPos += this.width;
 		}
+
 	}
 
 	@Deprecated
@@ -144,7 +208,7 @@ public class Renderer extends Canvas {
 	}
 
 	public void drawBitmap(Bitmap bm, int x, int y, float scale) {
-		if(scale == 1) {
+		if (scale == 1) {
 			drawBitmap(bm, x, y);
 			return;
 		}
@@ -168,19 +232,19 @@ public class Renderer extends Canvas {
 	}
 
 	public void drawBitmap(Bitmap bm, int x, int y) {
+		
 		if (bm.isTransparent())
 			drawBitmap_slow(bm, x, y);
-		else if(bm.getWidth() == Game.width && bm.getHeight() == Game.height) {
+		else if (bm.getWidth() == Game.width && bm.getHeight() == Game.height) {
 			System.arraycopy(bm.pixels, 0, pixels, 0, pixels.length);
-		}
-		else
+		} else
 			for (int line = 0; line < bm.getHeight(); line++) {
-				copyToLine(bm.getPreppedData()[line], x, y + line, bm.getWidth());
+				copyToLine(bm.pixels, line, x, y + line, bm.getWidth());
 			}
 	}
 
-	public void copyToLine(int[] bs, int x, int y, int width2) {
-		if (y > height || x < -width || y < 0)
+	public void copyToLine(int[] bs, int height, int x, int y, int width2) {
+		if (y > this.height || x < -width || y < 0)
 			return;
 		int startIndex = 0;
 		if (width2 + (x + y * width) > pixels.length) {
@@ -200,127 +264,118 @@ public class Renderer extends Canvas {
 			if (width2 < 0)
 				return;
 		}
-		System.arraycopy(bs, startIndex, pixels, x + y * width, width2);
+		System.arraycopy(bs, startIndex + height * width2, pixels, x + y * width, width2);
 	}
 
-	//public void drawBitmapRotated(Bitmap bm, int x, int y, float rad) {
-		/*if (rad == 0) {
-			drawBitmap(bm, x, y);
-			return;
-		}
-		if (x + bm.getWidth() < 0 || y + bm.getHeight() < 0 || x - bm.getWidth() > width)
-			return;
-		float sin = Util.sin(rad);
-		float cos = Util.cos(rad);
-		float bmw2 = bm.getWidth() / 2f;
-		float bmh2 = bm.getHeight() / 2f;
-		float mx, mxx;
-		float my, myx;
-		for (float j = 0; j < bm.getHeight(); j += .5f) {
-			for (float i = 0; i < bm.getWidth(); i += .5f) {
-				mxx = i - bmw2;
-				myx = j - bmh2;
-				mx = (cos * mxx - sin * myx);
-				my = (sin * mxx + cos * myx);
-				mx += bmw2 + x;
-				my += bmh2 + y;
-				// mx += x;
-				// my += y;
-				if (mx < 0 || my < 0 || mx > width)
-					continue;
-				putPixel((((int) my) * this.width + ((int) mx)), bm.pixels[(int) j * bm.getWidth() + (int) i]);
+	// public void drawBitmapRotated(Bitmap bm, int x, int y, float rad) {
+	/*
+	 * if (rad == 0) { drawBitmap(bm, x, y); return; } if (x + bm.getWidth() < 0
+	 * || y + bm.getHeight() < 0 || x - bm.getWidth() > width) return; float sin
+	 * = Util.sin(rad); float cos = Util.cos(rad); float bmw2 = bm.getWidth() /
+	 * 2f; float bmh2 = bm.getHeight() / 2f; float mx, mxx; float my, myx; for
+	 * (float j = 0; j < bm.getHeight(); j += .5f) { for (float i = 0; i <
+	 * bm.getWidth(); i += .5f) { mxx = i - bmw2; myx = j - bmh2; mx = (cos *
+	 * mxx - sin * myx); my = (sin * mxx + cos * myx); mx += bmw2 + x; my +=
+	 * bmh2 + y; // mx += x; // my += y; if (mx < 0 || my < 0 || mx > width)
+	 * continue; putPixel((((int) my) * this.width + ((int) mx)),
+	 * bm.pixels[(int) j * bm.getWidth() + (int) i]);
+	 * 
+	 * } }
+	 */
 
-			}
-		}*/
-		
-	//}
-	
+	// }
+
 	public void draw(GameObject go, int x, int y, float rad, float scale) {
 		Bitmap bm = go.bm;
 		if (rad == 0) {
 			drawBitmap(bm, x, y, scale);
 			return;
 		}
-		//if(scale == 1) {
-		//	drawBitmapRotated(bm, x, y, rad);
-		//	return;
-		//}
+		// if(scale == 1) {
+		// drawBitmapRotated(bm, x, y, rad);
+		// return;
+		// }
 		if (x + bm.getWidth() < 0 || y + bm.getHeight() < 0 || x - bm.getWidth() > width)
 			return;
 		float sin = Util.sin(rad);
 		float cos = Util.cos(rad);
-		
-		float step = Math.max(Math.max(Math.abs(sin), Math.abs(cos))-.2f, 0.7f);
-		float px = go!=null?go.rotationPivotX:.5f;
-		float py = go!=null?go.rotationPivotX:.5f;
-		float bmw2 = bm.getWidth()*scale * px;
-		float bmh2 = bm.getHeight()*scale * py;
+
+		float step = Math.max(Math.max(Math.abs(sin), Math.abs(cos)) - .2f, 0.7f);
+		float px = go != null ? go.rotationPivotX : .5f;
+		float py = go != null ? go.rotationPivotX : .5f;
+		float bmw2 = bm.getWidth() * scale * px;
+		float bmh2 = bm.getHeight() * scale * py;
 		float mx, mxx;
 		float my, myx;
-		for (float j = 0; j < bm.getHeight()*scale; j += step) {
-			for (float i = 0; i < bm.getWidth()*scale; i += step) {
+		for (float j = 0; j < bm.getHeight() * scale; j += step) {
+			for (float i = 0; i < bm.getWidth() * scale; i += step) {
 				mxx = i - bmw2;
 				myx = j - bmh2;
 				mx = (cos * mxx - sin * myx);
 				mx += bmw2 + x;
-				if(mx > width || mx < 0) continue;
-				
+				if (mx > width || mx < 0)
+					continue;
+
 				my = (sin * mxx + cos * myx);
 				my += bmh2 + y;
-				if(my > height || my < 0) continue;
+				if (my > height || my < 0)
+					continue;
 				// mx += x;
 				// my += y;
 
-				
-				putPixel((((int) my) * this.width + ((int) mx)), bm.pixels[(int) (j/scale) * bm.getWidth() + (int) (i/scale)]);
+				putPixel((((int) my) * this.width + ((int) mx)),
+						bm.pixels[(int) (j / scale) * bm.getWidth() + (int) (i / scale)]);
 
 			}
 		}
 	}
-	
+
 	public void drawBitmap(Bitmap bm, int x, int y, float rad, float scale) {
 		if (rad == 0) {
 			drawBitmap(bm, x, y, scale);
 			return;
 		}
-		//if(scale == 1) {
-		//	drawBitmapRotated(bm, x, y, rad);
-		//	return;
-		//}
+		// if(scale == 1) {
+		// drawBitmapRotated(bm, x, y, rad);
+		// return;
+		// }
 		if (x + bm.getWidth() < 0 || y + bm.getHeight() < 0 || x - bm.getWidth() > width)
 			return;
 		float sin = Util.sin(rad);
 		float cos = Util.cos(rad);
-		
-		float step = Math.max(Math.max(Math.abs(sin), Math.abs(cos))-.2f, 0.7f);
-		
-		float bmw2 = bm.getWidth()*scale / 2f;
-		float bmh2 = bm.getHeight()*scale / 2f;
+
+		float step = Math.max(Math.max(Math.abs(sin), Math.abs(cos)) - .2f, 0.7f);
+
+		float bmw2 = bm.getWidth() * scale / 2f;
+		float bmh2 = bm.getHeight() * scale / 2f;
 		float mx, mxx;
 		float my, myx;
-		for (float j = 0; j < bm.getHeight()*scale; j += step) {
-			for (float i = 0; i < bm.getWidth()*scale; i += step) {
+		for (float j = 0; j < bm.getHeight() * scale; j += step) {
+			for (float i = 0; i < bm.getWidth() * scale; i += step) {
 				mxx = i - bmw2;
 				myx = j - bmh2;
 				mx = (cos * mxx - sin * myx);
 				mx += bmw2 + x;
-				if(mx > width || mx < 0) continue;
-				
+				if (mx > width || mx < 0)
+					continue;
+
 				my = (sin * mxx + cos * myx);
 				my += bmh2 + y;
-				if(my > height || my < 0) continue;
+				if (my > height || my < 0)
+					continue;
 				// mx += x;
 				// my += y;
 
-				
-				putPixel((((int) my) * this.width + ((int) mx)), bm.pixels[(int) (j/scale) * bm.getWidth() + (int) (i/scale)]);
+				putPixel((((int) my) * this.width + ((int) mx)),
+						bm.pixels[(int) (j / scale) * bm.getWidth() + (int) (i / scale)]);
 
 			}
 		}
 	}
 
-	public void fillColoredRect(int x, int y, int width, int height, int color) {
-
+	public void fillColoredRect(float xf, float yf, int width, int height, int color) {
+		int x = (int) xf;
+		int y = (int) yf;
 		if (x + width < 0 || y + height < 0 || x > this.width)
 			return;
 		int i = 0;
@@ -341,7 +396,9 @@ public class Renderer extends Canvas {
 		}
 	}
 
-	public void drawColoredRect(int x, int y, int width, int height, int color) {
+	public void drawColoredRect(float xf, float yf, int width, int height, int color) {
+		int x = (int) xf;
+		int y = (int) yf;
 		if (x + width < 0 || y + height < 0 || x > this.width)
 			return;
 		int startPos = y * this.width + x;
@@ -380,18 +437,15 @@ public class Renderer extends Canvas {
 		}
 	}
 
-	public void render() {
-		
-		if (g == null)
-			g = getGraphics();
-		g.drawImage(image, 0, 0, super.getWidth(), super.getHeight(), null);
-	}
-
 	public void clear() {
 		System.arraycopy(clearPixels, 0, pixels, 0, pixels.length);
 	}
 
-
+	/*
+	 * @Override protected void paintComponent(Graphics g) {
+	 * super.paintComponent(g); g.drawImage(image, 0, 0, super.getWidth(),
+	 * super.getHeight(), null); }
+	 */
 
 	public void drawParticle(Particle p) {
 		if (p.getX() < 0 || p.getY() < 0 || p.getX() >= width || p.getY() >= height)
@@ -401,6 +455,10 @@ public class Renderer extends Canvas {
 
 	public void fill(int i) {
 		Util.intfill(pixels, i);
+	}
+
+	public void setClearColor(int color) {
+		Arrays.fill(clearPixels, color);
 	}
 
 }

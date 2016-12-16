@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -14,22 +13,27 @@ public class Client {
 	// public String name;
 	public String address;
 	public int port;
-	private final int ID = -1;
+	private int ID = -1;
 	public int attempt = 0;
 	private Socket socket;
 	private Thread connect, send, receive;
 	ClientListener listener;
 	public static int timeout = 1000;
 	public boolean attempingConnection;
-
+	public boolean handShook = false;
 	public LinkedBlockingDeque<byte[]> sendQueue = new LinkedBlockingDeque<byte[]>();
-
+	private String handShakeCode = "hD0fGz4qGN";
+	
 	public void connect() {
 		if (!(connect.getState() == Thread.State.NEW))
 			createConnectThread();
 
 		connect.start();
 
+	}
+	
+	public void setHandshakeKey(String s) {
+		handShakeCode = s;
 	}
 
 	public Client(String address, int port) {
@@ -60,7 +64,6 @@ public class Client {
 					socket = new Socket();
 					socket.connect(new InetSocketAddress(address, port), timeout);
 					attempingConnection = false;
-
 					startReceiving();
 					startSendThread();
 				} catch (IOException e) {
@@ -71,6 +74,8 @@ public class Client {
 			}
 		};
 	}
+
+
 
 	protected void startSendThread() {
 		send = new Thread("Sender [Client]") {
@@ -104,11 +109,12 @@ public class Client {
 	private void startReceiving() {
 		receive = new Thread("Receiver [Client]") {
 			public void run() {
+				byte[] bytes = new byte[2097152];
+				int numOfBytesRead = 2097152;
 				while (true) {
 					try {
-						byte[] bytes = new byte[1024];
-						Arrays.fill(bytes, (byte)-1);
-						int numOfBytesRead = socket.getInputStream().read(bytes);
+						for(int i = 0; i < numOfBytesRead; i++) bytes[i] = (byte)(-1);
+						numOfBytesRead = socket.getInputStream().read(bytes);
 						if(numOfBytesRead == -1) numOfBytesRead = bytes.length;
 						ByteBuffer bb = ByteBuffer.wrap(bytes, 0, numOfBytesRead);
 						//System.out.println(numOfBytesRead);
@@ -118,11 +124,16 @@ public class Client {
 								if(id == -1) {
 									break;
 								}
-								short size = bb.getShort();
+								int size = bb.getInt();
 								byte[] payload = new byte[size];
 								bb.get(payload, 0, size);
 								Packet p = new Packet(id, size, payload);
-								listener.receiveDataToClient(p);
+								
+								if(handShook)
+									listener.receiveDataToClient(p);
+								else {
+									handleHandshake(p);
+								}
 								//System.out.println("read " + read);
 							}
 							// listener.receiveDataToClient(ByteBuffer.wrap(bytes));
@@ -143,12 +154,46 @@ public class Client {
 		receive.start();
 	}
 
+	protected void handleHandshake(Packet p) {
+		//we're not ready yet
+		if(p.id == 4) {
+			p.toPayload();
+			if(p.getString().equals("WTC")) {
+				Packet codep = new Packet(5, handShakeCode.length() + 2);
+				codep.putString(handShakeCode);
+				sendDataHandshake(codep);
+			}
+		}else if(p.id == 5) {
+			handShook = true;
+			ID = p.getInt();
+		}else if(p.id == 3) {
+			//wrong handshakeKey
+			System.err.println("The handshake key from the server is different from yours!");
+			try {
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+
 	public int getID() {
 		return ID;
 	}
 
 	public void sendData(byte[] data) {
-		sendQueue.add(data);
+		if(isConnected() && handShook)
+			sendQueue.add(data);
+		else
+			;
+	}
+	private void sendDataHandshake(byte[] data) {
+		if(isConnected())
+			sendQueue.add(data);
+	}
+	private void sendDataHandshake(Packet p) {
+		sendDataHandshake(p.data);
 	}
 
 	public String getStatus() {

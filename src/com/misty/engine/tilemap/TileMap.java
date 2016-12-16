@@ -35,7 +35,6 @@ public class TileMap extends GameObject {
 		Tileset ts = tileset;
 		for(int d = 0; d < data.length; d++) {
 			int startI = (int) Math.max(((-x/ts.width)-Math.min(0, (int)(y/ts.height))*width), 0);
-			//System.out.println(startI);
 			int wCount = 0;
 			int hCount = 0;
 			for(int i = startI; i < data[d].length; i++) {
@@ -46,9 +45,9 @@ public class TileMap extends GameObject {
 					i+=width-wCount;
 					wCount = 0;
 					hCount++;
+					
 					if(hCount > Game.height/ts.height+1)
 						break;
-					
 				}
 				
 			}

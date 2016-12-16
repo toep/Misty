@@ -2,7 +2,6 @@ package com.misty.engine.graphics;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Arrays;
 
 import com.misty.utils.Util;
 
@@ -13,8 +12,6 @@ public class Bitmap {
 	public boolean flippedX = false;
 	public boolean flippedY = false;
 	public int[] pixels;
-	public int[][] preppedData;// only for bitmaps that aren't the size of the
-								// screen and have no transparent pixels!
 
 	private boolean transparency = false;
 
@@ -31,7 +28,15 @@ public class Bitmap {
 		this.height = bi.getHeight();
 		this.pixels = new int[bi.getWidth() * bi.getHeight()];
 		bi.getRGB(0, 0, width, height, pixels, 0, width);
-		prepDataArray();
+		determineTransparency();
+	}
+	public void determineTransparency() {
+		for(int i = 0; i < pixels.length; i++) {
+			if((pixels[i] & 0xff000000) != 0xff) {
+				transparency = true;
+				break;
+			}
+		}
 	}
 
 	public Bitmap(String string) throws IOException {
@@ -58,25 +63,6 @@ public class Bitmap {
 		pixels = newPixels;
 	}
 
-	public void prepDataArray() {
-		for (int i = 0; i < pixels.length; i++) {
-			if ((pixels[i] & 0xff000000) == 0x00) {
-				transparency = true;
-				break;
-			}
-		}
-		if (!transparency) {
-			preppedData = new int[height][width];
-			for (int line = 0; line < height; line++)
-				preppedData[line] = Arrays.copyOfRange(pixels, width * line, width * line + width);
-
-		}
-
-	}
-
-	public int[][] getPreppedData() {
-		return preppedData;
-	}
 
 	public boolean isTransparent() {
 		return transparency;

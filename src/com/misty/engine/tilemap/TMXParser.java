@@ -17,6 +17,15 @@ import org.xml.sax.SAXException;
 
 public class TMXParser {
 
+	
+	/**
+	 * 
+	 * @param str file name of the .tmx file you're trying to load
+	 * @return TileMap object that Renderer can draw
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
 	public static TileMap createTileMap(String str) throws ParserConfigurationException, SAXException, IOException {
 		File fXmlFile = new File(str);
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

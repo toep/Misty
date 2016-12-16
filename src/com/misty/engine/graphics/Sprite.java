@@ -12,9 +12,6 @@ import com.misty.utils.Util;
 public class Sprite extends GameObject {
 
 	protected float rotationDelta = 0f;
-	protected float scale = 1f;
-	protected int width;
-	protected int height;
 	public Sprite(Bitmap bm, float x, float y) {
 		this.bm = bm;
 		this.x = x;
@@ -22,6 +19,14 @@ public class Sprite extends GameObject {
 		this.width = bm.getWidth();
 		this.height = bm.getHeight();
 	}
+	
+	/**
+	 * 
+	 * @param s the name of the image file
+	 * @param x initial x position
+	 * @param y initial y position
+	 * @throws IOException file not found
+	 */
 	public Sprite(String s, float x, float y) throws IOException {
 		this(new Bitmap(s), x, y);
 		
@@ -29,7 +34,6 @@ public class Sprite extends GameObject {
 	
 	public void makeCollidable() {
 		setupShape();
-
 	}
 	
 	private void setupShape() {
@@ -60,20 +64,6 @@ public class Sprite extends GameObject {
 		//dy*=.98f;
 	}
 	
-	public void setScale(float s) {
-		scale = s;
-	}
-	
-	public float getScale() {
-		return scale;
-	}
-	
-	public void setRotation(float r) {
-		rotation = r;
-	}
-	public float getRotation() {
-		return rotation;
-	}
 	
 	@Override
 	public Shape getShape() {

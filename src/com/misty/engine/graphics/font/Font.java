@@ -50,4 +50,8 @@ public class Font {
 	public int getHeight() {
 		return h;
 	}
+
+	public int getCharacterWidth() {
+		return font[0].getWidth();
+	}
 }

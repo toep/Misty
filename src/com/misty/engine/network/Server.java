@@ -15,7 +15,6 @@ import com.misty.utils.Util;
 
 public class Server implements Runnable {
 
-	public static final short PORT = 19132;
 	public List<ClientSocket> clients = new ArrayList<ClientSocket>();
 	private LinkedBlockingDeque<SendInfo> sendQueue = new LinkedBlockingDeque<SendInfo>();
 	private ServerListener serverlistener;
@@ -23,7 +22,8 @@ public class Server implements Runnable {
 	private int port;
 	private boolean running = false;
 	private Thread run, manage, send, waitForConnection;
-
+	private String handShakeCode = "hD0fGz4qGN";
+	private boolean firstConnection = false;
 	public class ClientSocket {
 		public ClientSocket(int i, Socket s) {
 			id = i;
@@ -32,6 +32,7 @@ public class Server implements Runnable {
 
 		public int id;
 		public Socket socket;
+		public boolean handShook = false;
 
 	}
 
@@ -61,7 +62,11 @@ public class Server implements Runnable {
 		}
 		return null;
 	}
-
+	
+	public void setHandshakeKey(String s) {
+		handShakeCode = s;
+	}
+	
 	public Server(int port) {
 		this.port = port;
 		run = new Thread(this, "Server");
@@ -83,7 +88,7 @@ public class Server implements Runnable {
 	public void run() {
 		running = true;
 		System.out.println("Server started on port " + port);
-		manageClients();
+		
 		send();
 		waitForConnection();
 	}
@@ -127,6 +132,10 @@ public class Server implements Runnable {
 						ClientSocket cs = new ClientSocket(Util.randomUniqueID(), s);
 						clients.add(cs);
 						serverlistener.clientHasConnected(cs);
+						if(firstConnection()) {
+							manageClients();
+						}
+						askForCode(cs);
 						receive(cs);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -137,7 +146,18 @@ public class Server implements Runnable {
 		waitForConnection.start();
 	}
 
+	protected boolean firstConnection() {
+		return firstConnection;
+	}
+
+	protected void askForCode(ClientSocket cs) {
+		Packet p = new Packet(4, 3+2);
+		p.putString("WTC");
+		sendDataHandshake(p, cs);
+	}
+
 	private void manageClients() {
+		firstConnection = false;
 		manage = new Thread("Manage Clients [Server]") {
 			public void run() {
 				long lastTime = System.nanoTime();
@@ -167,13 +187,39 @@ public class Server implements Runnable {
 	private void receive(ClientSocket s) {
 		new Thread("Receiver " + s.id + " [Server]") {
 			public void run() {
+				byte[] bytes = new byte[2097152];//2^21
+				int numOfBytesRead = 2097152;
+				
+				ByteBuffer inbuffer = ByteBuffer.wrap(bytes, 0, numOfBytesRead);
+				ByteBufferBackedOutputStream os = new ByteBufferBackedOutputStream(inbuffer);
 				while (s != null) {
-					
+					os.clearBuffer();
 					try {
-					byte[] bytes = new byte[1024];
 					Arrays.fill(bytes, (byte)-1);
+					for(int i = 0; i < numOfBytesRead; i++) bytes[i] = (byte)(-1);
+					int sizeOfPacket;
+					byte[] buf = new byte[65536];
+					ByteBuffer headerbb = ByteBuffer.wrap(buf);
+					s.socket.getInputStream().read(buf, 0, 5);
+					byte idd = headerbb.get();//id
+					sizeOfPacket = headerbb.getInt();
+					//System.out.println("expected size of packet: " + sizeOfPacket);
+					//os.buf.position(0);
+					os.write(idd);
+					os.write(sizeOfPacket);
+					int bytesRead = 0;
+					numOfBytesRead = 5;
+					while((bytesRead = s.socket.getInputStream().read(buf)) > 0){
+					    os.write(buf, 0, bytesRead);
+					    numOfBytesRead+=bytesRead;
+					   // System.out.println("we've read: " + numOfBytesRead + " bytes");
+					    if(numOfBytesRead >= sizeOfPacket) break;
+					}
+					//numOfBytesRead+=5;//for the header
+					//numOfBytesRead = //s.socket.getInputStream().read(bytes);
+					//s.socket.getInputStream().read(bytes, 0, 2097152);
+					//System.out.println("socket read bytes: " + numOfBytesRead);
 
-					int numOfBytesRead = s.socket.getInputStream().read(bytes);
 					if(numOfBytesRead == -1) {
 						int i = bytes.length-1;
 						for(; i >= 0; i--) {
@@ -185,20 +231,26 @@ public class Server implements Runnable {
 						
 						numOfBytesRead = i;
 					}
+					//System.out.println("creating bb with size " + numOfBytesRead);
 					ByteBuffer bb = ByteBuffer.wrap(bytes, 0, numOfBytesRead);
 					//Util.printBB(bb);
 					
 					if (serverlistener != null) {
 						while (bb.hasRemaining()) {
 							byte id = bb.get();
-							if(id == -1) {
+							if(id <= 0) {
 								break;
 							}
-							short size = bb.getShort();
+							int size = bb.getInt();
+							//System.out.println("we have a package("+id+") with size " + size);
 							byte[] payload = new byte[size];
 							bb.get(payload, 0, size);
 							Packet p = new Packet(id, size, payload);
-							serverlistener.receiveDataToServer(s, p);
+							if(s.handShook)
+								serverlistener.receiveDataToServer(s, p);
+							else {
+								handleHandshake(s, p);
+							}
 						}
 						// listener.receiveDataToClient(ByteBuffer.wrap(bytes));
 					} else {
@@ -207,11 +259,17 @@ public class Server implements Runnable {
 					}
 					catch(Exception e) {
 						System.out.println("a client disconnected unexpectedly!");
+						e.printStackTrace();
 						clients.remove(s);
 						userDisconnected(s);
 						return;
 					}
 
+				}
+				try {
+					os.close();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}.start();
@@ -219,6 +277,24 @@ public class Server implements Runnable {
 	}
 
 
+
+	protected void handleHandshake(ClientSocket s, Packet p) {
+		if(p.id == 5) {
+			p.toPayload();
+			if(p.getString().equals(handShakeCode)) {
+				//matching handshake
+				s.handShook = true;
+				Packet idp = new Packet(5, 4);
+				idp.putInt(s.id);
+				sendDataHandshake(idp, s);
+			}
+			else {
+				Packet w = new Packet(3, 0);
+				sendDataHandshake(w, s);
+				userDisconnected(s);
+			}
+		}
+	}
 
 	public void sendToAllExcept(ClientSocket except, final byte[] data) {
 		for (ClientSocket s : clients) {
@@ -243,7 +319,14 @@ public class Server implements Runnable {
 
 
 	public void sendData(final byte[] data, ClientSocket c) {
-		send(data, c);
+		if(c.handShook)
+			send(data, c);
+	}
+	
+
+
+	private void sendDataHandshake(Packet p, ClientSocket s) {
+		send(p.data, s);
 	}
 
 	// override this
