@@ -1,9 +1,14 @@
 package com.misty.engine;
 
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +19,7 @@ import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.UI.Clickable;
 import com.misty.listeners.MyListener;
+import com.misty.utils.Util;
 
 public abstract class Game implements Runnable {
 	public static double tick;
@@ -110,6 +116,35 @@ public abstract class Game implements Runnable {
 		thread = new Thread(this, "Main Loop");
 		thread.start();
 	}
+	/**
+	 * set's the cursor to visible or invisible
+	 * @param b
+	 */
+	public void setMouseVisible(boolean b) {
+		
+		if(!b) {
+			BufferedImage cursorImg = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+			// Create a new blank cursor.
+			Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+			    cursorImg, new Point(0, 0), "blank cursor");
+			graphics.setCursor(blankCursor);
+		}
+		else {
+			graphics.setCursor(Cursor.getDefaultCursor());
+		}
+	}
+	
+	public void setCursorImage(String name) {
+		BufferedImage img;
+		try {
+			img = Util.getBufferedImageFromFile(name);
+			graphics.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(img, new Point(0, 0), name));
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+	}
+
 
 	public void run() {
 		long lastTime = System.nanoTime();
@@ -244,7 +279,6 @@ public abstract class Game implements Runnable {
 		int mouseY = (e.getY()) / scale;
 
 		mousePressed(mouseX, mouseY);
-
 		for (int i = gameObjects.size() - 1; i >= 0; i--) {
 			if (gameObjects.get(i) instanceof Clickable) {
 				if (gameObjects.get(i).containsPoint(mouseX, mouseY)) {
@@ -298,7 +332,20 @@ public abstract class Game implements Runnable {
 	}
 
 	public void mouseMoved(MouseEvent e) {
-
+		int mouseX = (e.getX()) / scale;
+		int mouseY = (e.getY()) / scale;
+		for (int i = gameObjects.size() - 1; i >= 0; i--) {
+			if (gameObjects.get(i) instanceof Clickable) {
+				Clickable cl = (Clickable) gameObjects.get(i);
+				boolean inside = gameObjects.get(i).containsPoint(mouseX, mouseY);
+				if(inside && !cl.isMouseOver()) {
+					cl.onHoverEnter();
+				}
+				if(!inside && cl.isMouseOver()) {
+					cl.onHoverExit();
+				}
+			}
+		}
 	}
 
 	public void windowClosed(WindowEvent e) {

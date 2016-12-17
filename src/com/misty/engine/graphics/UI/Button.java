@@ -12,30 +12,52 @@ import com.misty.engine.graphics.UI.listeners.ButtonListener;
 public class Button extends GameObject implements Clickable{
 
 	private String title;
-	Rectangle rect;
 	private boolean clickDown = false;
 	private int color = 0xffaeaeae;
 	private int normalColor = 0xffaeaeae;
 	private int pressedColor = 0xffeeeeee;
+	private int borderColor = 0xff333333;
+	private boolean drawBorder = true;
+	private boolean mouseOnButton = false;
+
 	ArrayList<ButtonListener> listeners;
 	public Button() {
 		title = "";
-		width = 10;
-		height = 10;
+		width = 20;
+		height = 12;
 		listeners = new ArrayList<ButtonListener>();
 	}
 	
 	public Button(String str) {
-		rect = new Rectangle(0, 0, 0, 0);
 		setText(str);
-		height = 16;
+		setHeight(16);
 		
 		listeners = new ArrayList<ButtonListener>();
+	}
+	/**
+	 * creates a button with set text and height
+	 * @param string
+	 * @param height
+	 */
+	public Button(String string, int height) {
+		this(string);
+		setHeight(height);
+	}
+	
+	public void setHeight(int h) {
+		this.height = h;
+	}
+
+	public void setBorderColor(int col) {
+		borderColor = col;
+	}
+	
+	public void setDrawBorder(boolean border) {
+		drawBorder = border;
 	}
 	public void setText(String str) {
 		title = str;
 		width = 10+str.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
-		rect.width = width;
 	}
 	
 	public void setPressedColor(int col) {
@@ -43,6 +65,7 @@ public class Button extends GameObject implements Clickable{
 	}
 	public void setColor(int col) {
 		normalColor = col;
+		color = normalColor;
 	}
 	public void addButtonListener(ButtonListener bl) {
 		listeners.add(bl);
@@ -53,20 +76,23 @@ public class Button extends GameObject implements Clickable{
 	
 	public void setPosition(float x, float y) {
 		super.setPosition(x, y);
-		rect.x = (int)x;
-		rect.y = (int)y;
 	}
 	
 	@Override
 	public Shape getShape() {
-		return rect;
+		return new Rectangle((int)x, (int)y, width, height);
 	}
 
 	@Override
 	public void draw(Renderer r) {
 		r.fillColoredRect(x, y, width, height, color);
 		r.drawString(title, x+5, y+height/2-4);
-		r.drawColoredRect(x, y, width, height, 0xffffffff);
+		
+		if(drawBorder)
+			r.drawColoredRect(x, y, width, height, borderColor);
+		if(mouseOnButton) {
+			r.drawColoredRect(x, y, width-1, height-1, borderColor);
+		}
 	}
 
 	@Override
@@ -100,6 +126,21 @@ public class Button extends GameObject implements Clickable{
 	public void onclickReleasedOutside() {
 		release();
 
+	}
+
+	@Override
+	public void onHoverEnter() {
+		mouseOnButton = true;
+	}
+
+	@Override
+	public void onHoverExit() {
+		mouseOnButton = false;
+	}
+	
+	@Override
+	public boolean isMouseOver() {
+		return mouseOnButton;
 	}
 
 }

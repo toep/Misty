@@ -88,6 +88,6 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	 * @return true if it contains the point x, y
 	 */
 	public boolean containsPoint(int x, int y) {
-		return x >= x && x < x + width && y >= y && y < y + height;
+		return x >= this.x && x < this.x + width && y >= this.y && y < this.y + height;
 	}
 }
