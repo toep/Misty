@@ -6,8 +6,8 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 
-import com.misty.engine.Vector2;
 import com.misty.utils.Util;
+import com.misty.utils.Vector2;
 
 public class Sprite extends GameObject {
 

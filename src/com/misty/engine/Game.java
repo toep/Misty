@@ -16,8 +16,12 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.misty.engine.graphics.GameObject;
+import com.misty.engine.graphics.Group;
+import com.misty.engine.graphics.Particle;
 import com.misty.engine.graphics.Renderer;
+import com.misty.engine.graphics.Stage;
 import com.misty.engine.graphics.UI.Clickable;
+import com.misty.engine.graphics.font.Font;
 import com.misty.listeners.MyListener;
 import com.misty.utils.Util;
 
@@ -43,12 +47,17 @@ public abstract class Game implements Runnable {
 	private int lastFPS = framerate;
 	private boolean showFPS = true;
 	protected ArrayList<GameObject> gameObjects = new ArrayList<GameObject>();
-	
-	/** used for other game components to get a copy of the current game*/
+	protected ArrayList<Stage> stages = new ArrayList<Stage>();
+
+	/** used for other game components to get a copy of the current game */
 	private static Game currentGame;
 
-	/** used to run code in the update method if received from network/eventlisteners*/
+	/**
+	 * used to run code in the update method on main thread if received from
+	 * network/eventlisteners
+	 */
 	public ConcurrentLinkedQueue<Runnable> actionQueue = new ConcurrentLinkedQueue<Runnable>();
+	private Stage currentStage;
 
 	public Game(String name, int width, int height, int scale) {
 		this.name = name;
@@ -74,22 +83,28 @@ public abstract class Game implements Runnable {
 			currentGame = this;
 		}
 	}
-	
+
 	public Game(String name, int width, int height) {
 		this(name, width, height, 1);
 	}
 
 	/**
 	 * Gives the game handle over drawing and updating
+	 * 
 	 * @param go the GameObject you wish to pass
 	 */
-	public void addObject(GameObject go) {
-		gameObjects.add(go);
-		Collections.sort(gameObjects);
+	public void add(GameObject go) {
+		if (go instanceof Stage) {
+			stages.add((Stage) go);
+		} else {
+			gameObjects.add(go);
+			Collections.sort(gameObjects);
+		}
 	}
 
 	/**
 	 * adds a particle to the engine
+	 * 
 	 * @param p
 	 */
 	public void addParticle(Particle p) {
@@ -98,6 +113,7 @@ public abstract class Game implements Runnable {
 
 	/**
 	 * sets the color the screen should clear with every frame
+	 * 
 	 * @param c color in 0xaarrggbb
 	 */
 	public void setClearColor(int c) {
@@ -108,6 +124,10 @@ public abstract class Game implements Runnable {
 		return graphics;
 	}
 
+	public void setFont(Font font) {
+		graphics.setFont(font);
+	}
+
 	/**
 	 * Starts the main game loop and begins game
 	 */
@@ -116,48 +136,48 @@ public abstract class Game implements Runnable {
 		thread = new Thread(this, "Main Loop");
 		thread.start();
 	}
+
 	/**
 	 * set's the cursor to visible or invisible
+	 * 
 	 * @param b
 	 */
 	public void setMouseVisible(boolean b) {
-		
-		if(!b) {
+
+		if (!b) {
 			BufferedImage cursorImg = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 			// Create a new blank cursor.
-			Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
-			    cursorImg, new Point(0, 0), "blank cursor");
+			Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0),
+					"blank cursor");
 			graphics.setCursor(blankCursor);
-		}
-		else {
+		} else {
 			graphics.setCursor(Cursor.getDefaultCursor());
 		}
 	}
-	
+
 	public void setCursorImage(String name) {
 		BufferedImage img;
 		try {
 			img = Util.getBufferedImageFromFile(name);
 			graphics.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(img, new Point(0, 0), name));
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 		}
 	}
-
 
 	public void run() {
 		long lastTime = System.nanoTime();
 		long timer = System.currentTimeMillis();
 		final double nsUpdate = 1000000000.0 / updaterate;
 		final double nsFrames = 1000000000.0 / framerate;
-	
+
 		double deltaupdate = 0;
 		double deltaframes = 0;
 		int frames = 0;
-	
+
 		int updates = 0;
-	
+
 		// graphics.clear();
 		while (running) {
 			long now = System.nanoTime();
@@ -203,7 +223,7 @@ public abstract class Game implements Runnable {
 				deltaframes--;
 				frames++;
 			}
-	
+
 			if (System.currentTimeMillis() - timer >= 1000) {
 				lastFPS = frames;
 				frame.setTitle("Normal | " + ("FPS: " + frames + ", UPS: " + updates));
@@ -211,7 +231,7 @@ public abstract class Game implements Runnable {
 				updates = 0;
 				timer = System.currentTimeMillis();
 			}
-	
+
 		}
 	}
 
@@ -259,6 +279,10 @@ public abstract class Game implements Runnable {
 		keys[keyCode] = a;
 	}
 
+	public void setStage(Stage stage) {
+		currentStage = stage;
+	}
+
 	public abstract void draw(Renderer g);
 
 	public abstract void update();
@@ -277,35 +301,82 @@ public abstract class Game implements Runnable {
 	public void mousePressed(MouseEvent e) {
 		int mouseX = (e.getX()) / scale;
 		int mouseY = (e.getY()) / scale;
-
+		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
+		
 		mousePressed(mouseX, mouseY);
-		for (int i = gameObjects.size() - 1; i >= 0; i--) {
-			if (gameObjects.get(i) instanceof Clickable) {
-				if (gameObjects.get(i).containsPoint(mouseX, mouseY)) {
-					if (((Clickable) gameObjects.get(i)).onClickPressed(mouseX, mouseY))
+		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
+			if (currentGameObjects.get(i) instanceof Clickable) {
+				if (currentGameObjects.get(i).containsPoint(mouseX, mouseY)) {
+					if (((Clickable) currentGameObjects.get(i)).onClickPressed(mouseX, mouseY))
 						break;
 
 				}
 			}
+			if (currentGameObjects.get(i) instanceof Group) {
+				Group g = (Group) currentGameObjects.get(i);
+				mousePressed(mouseX - g.getX(), mouseY - g.getY(), g);
+			}
 		}
 
+	}
+
+	private void mousePressed(int mouseX, int mouseY, Group group) {
+		ArrayList<GameObject> gos = group.getChildren();
+		for (int i = gos.size() - 1; i >= 0; i--) {
+			if (gos.get(i) instanceof Clickable) {
+				if (gos.get(i).containsPoint(mouseX, mouseY)) {
+					if (((Clickable) gos.get(i)).onClickPressed(mouseX, mouseY))
+						break;
+
+				}
+			}
+			if (gos.get(i) instanceof Group) {
+				Group g = (Group) gos.get(i);
+				mousePressed(mouseX - g.getX(), mouseY - g.getY(), g);
+			}
+		}
 	}
 
 	public void mouseReleased(MouseEvent e) {
 		int mouseX = (e.getX()) / scale;
 		int mouseY = (e.getY()) / scale;
 		mouseReleased(mouseX, mouseY);
+		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
 
-		for (int i = gameObjects.size() - 1; i >= 0; i--) {
-			if (gameObjects.get(i) instanceof Clickable) {
-				Clickable cl = (Clickable) gameObjects.get(i);
-				boolean inside = gameObjects.get(i).containsPoint(mouseX, mouseY);
+		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
+			if (currentGameObjects.get(i) instanceof Clickable) {
+				Clickable cl = (Clickable) currentGameObjects.get(i);
+				boolean inside = currentGameObjects.get(i).containsPoint(mouseX, mouseY);
 				if (cl.isPressed() && inside) {
 					if (cl.onClickReleased(mouseX, mouseY))
 						break;
 				} else if (cl.isPressed()) {
 					cl.onclickReleasedOutside();
 				}
+			}
+			if (currentGameObjects.get(i) instanceof Group) {
+				Group g = (Group) currentGameObjects.get(i);
+				mouseReleased(mouseX - g.getX(), mouseY - g.getY(), g);
+			}
+		}
+	}
+
+	private void mouseReleased(int mouseX, int mouseY, Group group) {
+		ArrayList<GameObject> gos = group.getChildren();
+		for (int i = gos.size() - 1; i >= 0; i--) {
+			if (gos.get(i) instanceof Clickable) {
+				Clickable cl = (Clickable) gos.get(i);
+				boolean inside = gos.get(i).containsPoint(mouseX, mouseY);
+				if (cl.isPressed() && inside) {
+					if (cl.onClickReleased(mouseX, mouseY))
+						break;
+				} else if (cl.isPressed()) {
+					cl.onclickReleasedOutside();
+				}
+			}
+			if (gos.get(i) instanceof Group) {
+				Group g = (Group) gos.get(i);
+				mouseReleased(mouseX - g.getX(), mouseY - g.getY(), g);
 			}
 		}
 	}
@@ -328,22 +399,81 @@ public abstract class Game implements Runnable {
 	}
 
 	public void mouseDragged(MouseEvent e) {
+		int mouseX = (e.getX()) / scale;
+		int mouseY = (e.getY()) / scale;
+		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
 
+		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
+			if (currentGameObjects.get(i) instanceof Clickable) {
+				Clickable cl = (Clickable) currentGameObjects.get(i);
+				cl.onDragged(mouseX, mouseY);
+			}
+			if (currentGameObjects.get(i) instanceof Group) {
+				Group g = (Group) currentGameObjects.get(i);
+				mouseDragged(mouseX - g.getX(), mouseY - g.getY(), g);
+			}
+		}
+	}
+
+	private void mouseDragged(int mouseX, int mouseY, Group group) {
+		ArrayList<GameObject> gos = group.getChildren();
+		for (int i = gos.size() - 1; i >= 0; i--) {
+			if (gos.get(i) instanceof Clickable) {
+				Clickable cl = (Clickable) gos.get(i);
+				cl.onDragged(mouseX, mouseY);
+			}
+			if (gos.get(i) instanceof Group) {
+				Group g = (Group) gos.get(i);
+				mouseDragged(mouseX - g.getX(), mouseY - g.getY(), g);
+			}
+		}
 	}
 
 	public void mouseMoved(MouseEvent e) {
 		int mouseX = (e.getX()) / scale;
 		int mouseY = (e.getY()) / scale;
-		for (int i = gameObjects.size() - 1; i >= 0; i--) {
-			if (gameObjects.get(i) instanceof Clickable) {
-				Clickable cl = (Clickable) gameObjects.get(i);
-				boolean inside = gameObjects.get(i).containsPoint(mouseX, mouseY);
-				if(inside && !cl.isMouseOver()) {
+		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
+		mouseMoved(mouseX, mouseY);
+		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
+			if (currentGameObjects.get(i) instanceof Clickable) {
+				Clickable cl = (Clickable) currentGameObjects.get(i);
+				boolean inside = currentGameObjects.get(i).containsPoint(mouseX, mouseY);
+				if (inside && !cl.isMouseOver()) {
 					cl.onHoverEnter();
 				}
-				if(!inside && cl.isMouseOver()) {
+				if (!inside && cl.isMouseOver()) {
 					cl.onHoverExit();
 				}
+
+			}
+			if (currentGameObjects.get(i) instanceof Group) {
+				Group g = (Group) currentGameObjects.get(i);
+				mouseMoved(mouseX - g.getX(), mouseY - g.getY(), g);
+			}
+		}
+	}
+
+	public void mouseMoved(int mouseX, int mouseY) {
+		
+	}
+
+	private void mouseMoved(int mouseX, int mouseY, Group group) {
+		ArrayList<GameObject> gos = group.getChildren();
+		for (int i = gos.size() - 1; i >= 0; i--) {
+			if (gos.get(i) instanceof Clickable) {
+				Clickable cl = (Clickable) gos.get(i);
+				boolean inside = gos.get(i).containsPoint(mouseX, mouseY);
+				if (inside && !cl.isMouseOver()) {
+					cl.onHoverEnter();
+				}
+				if (!inside && cl.isMouseOver()) {
+					cl.onHoverExit();
+				}
+
+			}
+			if (gos.get(i) instanceof Group) {
+				Group g = (Group) gos.get(i);
+				mouseMoved(mouseX - g.getX(), mouseY - g.getY(), g);
 			}
 		}
 	}
@@ -389,18 +519,27 @@ public abstract class Game implements Runnable {
 	}
 
 	private void drawGameObjects() {
-		Iterator<GameObject> gos = gameObjects.iterator();
-		while (gos.hasNext()) {
-			gos.next().draw(graphics);
+		if (currentStage == null) {
+			Iterator<GameObject> gos = gameObjects.iterator();
+			while (gos.hasNext()) {
+				gos.next().draw(graphics);
+			}
+		} else {
+			currentStage.draw(graphics);
 		}
 	}
 
 	private void updateGameObjects() {
+		if (currentStage == null) {
 		Iterator<GameObject> gos = gameObjects.iterator();
 		while (gos.hasNext()) {
 			gos.next().update();
 		}
-	
+		}
+		else {
+			currentStage.update();
+		}
+
 	}
 
 	private void drawParticles() {
@@ -409,9 +548,14 @@ public abstract class Game implements Runnable {
 			graphics.drawParticle(it.next());
 		}
 	}
+	
+
+	public void clearParticles() {
+		particles.clear();
+	}
 
 	private void updateParticles() {
-	
+
 		Iterator<Particle> it = particles.iterator();
 		while (it.hasNext()) {
 			Particle p = it.next();

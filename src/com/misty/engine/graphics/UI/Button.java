@@ -143,4 +143,9 @@ public class Button extends GameObject implements Clickable{
 		return mouseOnButton;
 	}
 
+	@Override
+	public boolean onDragged(int x, int y) {
+		return false;
+	}
+
 }

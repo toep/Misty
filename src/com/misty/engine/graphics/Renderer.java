@@ -9,7 +9,6 @@ import java.util.Arrays;
 import javax.swing.JPanel;
 
 import com.misty.engine.Game;
-import com.misty.engine.Particle;
 import com.misty.engine.graphics.font.Font;
 import com.misty.utils.Util;
 
@@ -31,7 +30,9 @@ public class Renderer extends JPanel {
 	private int renderingMode = RENDERING_MODE_NORMAL;
 	private int clearColor = 0xff000000;
 	private Font font;
-
+	
+	private int xoffset = 0;
+	private int yoffset = 0;
 	
 	
 	
@@ -70,7 +71,7 @@ public class Renderer extends JPanel {
 		image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 
-		font = Font.regularFont;
+		font = Font.defaultFont;
 		clearPixels = new int[pixels.length];
 		Arrays.fill(clearPixels, clearColor);
 	}
@@ -102,7 +103,7 @@ public class Renderer extends JPanel {
 	}
 
 	/**
-	 * draws a string to pixel array in a white color with scale 1
+	 * draws a string to pixel array in a black color with scale 1
 	 * @param str the string being drawn
 	 * @param xf x position
 	 * @param yf y position
@@ -124,6 +125,8 @@ public class Renderer extends JPanel {
 	public void drawString(String str, int x, int y, int color, float scale) {
 		int row = 0;
 		int j = 0;
+		x+=xoffset;
+		y+=yoffset;
 		for (int i = 0; i < str.length(); i++) {
 			if (str.charAt(i) == '\n') {
 				row++;
@@ -193,6 +196,8 @@ public class Renderer extends JPanel {
 			return;
 		int i = 0;
 		int j = 0;
+		x+=xoffset;
+		y+=yoffset;
 		int maxi = bm.getWidth();
 		if (x < 0)
 			i = -x;
@@ -208,12 +213,17 @@ public class Renderer extends JPanel {
 	}
 
 	public void drawBitmap(Bitmap bm, int x, int y, float scale) {
+		
 		if (scale == 1) {
 			drawBitmap(bm, x, y);
 			return;
 		}
 		if (x + bm.getWidth() * scale < 0 || y + bm.getHeight() * scale < 0 || x > width)
 			return;
+		
+		x+=xoffset;
+		y+=yoffset;
+		
 		int i = 0;
 		int j = 0;
 		int maxi = (int) (bm.getWidth() * scale);
@@ -233,9 +243,13 @@ public class Renderer extends JPanel {
 
 	public void drawBitmap(Bitmap bm, int x, int y) {
 		
-		if (bm.isTransparent())
+		if (bm.isTransparent()) {
 			drawBitmap_slow(bm, x, y);
-		else if (bm.getWidth() == Game.width && bm.getHeight() == Game.height) {
+			return;
+		}
+		x+=xoffset;
+		y+=yoffset;
+		if (x == 0 && y == 0 && bm.getWidth() == Game.width && bm.getHeight() == Game.height) {
 			System.arraycopy(bm.pixels, 0, pixels, 0, pixels.length);
 		} else
 			for (int line = 0; line < bm.getHeight(); line++) {
@@ -295,6 +309,8 @@ public class Renderer extends JPanel {
 		// drawBitmapRotated(bm, x, y, rad);
 		// return;
 		// }
+		x+=xoffset;
+		y+=yoffset;
 		if (x + bm.getWidth() < 0 || y + bm.getHeight() < 0 || x - bm.getWidth() > width)
 			return;
 		float sin = Util.sin(rad);
@@ -335,6 +351,8 @@ public class Renderer extends JPanel {
 			drawBitmap(bm, x, y, scale);
 			return;
 		}
+		x+=xoffset;
+		y+=yoffset;
 		// if(scale == 1) {
 		// drawBitmapRotated(bm, x, y, rad);
 		// return;
@@ -374,8 +392,8 @@ public class Renderer extends JPanel {
 	}
 
 	public void fillColoredRect(float xf, float yf, int width, int height, int color) {
-		int x = (int) xf;
-		int y = (int) yf;
+		int x = (int) xf + xoffset;
+		int y = (int) yf + yoffset;
 		if (x + width < 0 || y + height < 0 || x > this.width)
 			return;
 		int i = 0;
@@ -397,8 +415,8 @@ public class Renderer extends JPanel {
 	}
 
 	public void drawColoredRect(float xf, float yf, int width, int height, int color) {
-		int x = (int) xf;
-		int y = (int) yf;
+		int x = (int) xf + xoffset;
+		int y = (int) yf + yoffset;
 		if (x + width < 0 || y + height < 0 || x > this.width)
 			return;
 		int startPos = y * this.width + x;
@@ -459,6 +477,11 @@ public class Renderer extends JPanel {
 
 	public void setClearColor(int color) {
 		Arrays.fill(clearPixels, color);
+	}
+
+	public void translate(float x, float y) {
+		xoffset+=x;
+		yoffset+=y;
 	}
 
 }

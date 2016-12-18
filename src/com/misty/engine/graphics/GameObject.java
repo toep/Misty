@@ -64,6 +64,22 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 		return rotation;
 	}
 	
+	public int getX() {
+		return (int) x;
+	}
+	
+	public int getY() {
+		return (int) y;
+	}
+	
+	public int getWidth() {
+		return width;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
 	@Override
 	public int compareTo(GameObject o) {
 			return z - o.z;

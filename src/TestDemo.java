@@ -1,5 +1,4 @@
 
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
@@ -10,8 +9,11 @@ import org.xml.sax.SAXException;
 
 import com.misty.engine.Game;
 import com.misty.engine.graphics.Animation;
+import com.misty.engine.graphics.ParticleEmitter;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.Sprite;
+import com.misty.engine.graphics.Stage;
+import com.misty.engine.graphics.UI.Button;
 import com.misty.engine.graphics.font.Font;
 import com.misty.engine.tilemap.TMXParser;
 import com.misty.engine.tilemap.TileMap;
@@ -25,9 +27,11 @@ public class TestDemo extends Game {
 	Animation ani;
 	Sprite background;
 	TileMap testMap;
+	ParticleEmitter emitter;
 	public TestDemo(int width, int height, int scale) {
 		super("TileMap Demo", width, height, scale);
 		setClearColor(0xff87CEEB);
+		setCursorImage("res/cursor.png");
 		try {
 			//we create an animation with each frame being 32x32 pixels
 			ani = new Animation("res/playerAni.png", 32, 32);
@@ -44,14 +48,32 @@ public class TestDemo extends Game {
 		testMap.setZ(3);
 		ani.setZ(4);
 		ani.setPosition(300, 300);
-		addObject(ani);
-		addObject(testMap);
-		addObject(background);
-		start();
+		add(ani);
+		add(testMap);
+		add(background);
+		
+		Stage mainMenu = new Stage();
+		Button start = new Button("Click to start");
+		start.setPosition(width/2-start.getWidth()/2, height/2-start.getHeight()/2);
+		start.addButtonListener(() -> {
+			setStage(null);
+			clearParticles();
+		});
+		mainMenu.add(start);
+		emitter = new ParticleEmitter(width/2, height/2);
+		mainMenu.add(emitter);
+
+
+		add(mainMenu);
+		
+		setStage(mainMenu);
 	}
 
+	
+
+
 	public static void main(String[] args) {
-		new TestDemo(576, 448, 2);
+		new TestDemo(576, 448, 2).start();
 	}
 	
 	@Override
@@ -81,10 +103,13 @@ public class TestDemo extends Game {
 		ani.setRotation(yOffset/50f);
 	}
 	
-	@Override
-	public void mouseMoved(MouseEvent e) {
+	
+	
+	public void mouseMoved(int x, int y) {
 		//this is how I get the animation to follow the mouse
-		ani.setPosition(e.getX()/scale, e.getY()/scale);
+		ani.setPosition(x, y);
+		emitter.setPosition(x, y);
+		
 		
 	}
 }

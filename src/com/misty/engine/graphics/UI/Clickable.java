@@ -9,6 +9,8 @@ public interface Clickable {
 	
 	boolean onClickReleased(int x, int y);
 	
+	boolean onDragged(int x, int y);
+	
 	void onHoverEnter();
 	void onHoverExit();
 
