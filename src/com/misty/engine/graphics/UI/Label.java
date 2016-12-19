@@ -7,16 +7,22 @@ import com.misty.engine.graphics.Renderer;
 
 public class Label extends GameObject {
 
-	private String str;
-	private int color = 0xffffffff;
+	protected String str;
+	protected int color = 0xffffffff;
 	
 	public Label(String str, int x, int y) {
 		this.str = str;
 		this.x = x;
 		this.y = y;
+		this.width = str.length()*8;
+		this.height = 12;
 	}
 	public void setText(String str) {
 		this.str = str;
+		this.width = str.length()*8;
+	}
+	public String getText() {
+		return str;
 	}
 	public void setColor(int color) {
 		this.color = color;

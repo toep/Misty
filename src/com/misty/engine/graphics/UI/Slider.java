@@ -115,4 +115,8 @@ public class Slider extends GameObject implements Clickable {
 		listeners.add(sliderListener);
 	}
 
+	@Override
+	public void onClickOutside() {
+	}
+
 }

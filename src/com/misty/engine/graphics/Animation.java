@@ -34,6 +34,8 @@ public class Animation extends GameObject {
 	 */
 	public Animation(String string, int w, int h) throws IOException {
 		this(Util.bitmapsFromSheet(Util.createBitmapFromFile(string), w, h));
+		width = w;
+		height = h;
 	}
 	private void setupShape() {
 		Point[] pts = Util.makePoly(bm, 10, 20);
@@ -90,7 +92,6 @@ public class Animation extends GameObject {
 		//Rectangle r = new Rectangle(img.width, img.height);
 		af.translate(x, y);
 		
-		af.rotate(Game.tick/2, bm.getWidth()/2, bm.getHeight()/2);
 		return af.createTransformedShape(shape);
 	}
 	

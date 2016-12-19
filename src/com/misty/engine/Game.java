@@ -21,14 +21,15 @@ import com.misty.engine.graphics.Particle;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.Stage;
 import com.misty.engine.graphics.UI.Clickable;
+import com.misty.engine.graphics.UI.Typeable;
 import com.misty.engine.graphics.font.Font;
 import com.misty.listeners.MyListener;
 import com.misty.utils.Util;
 
 public abstract class Game implements Runnable {
-	public static double tick;
-	public static int width;
-	public static int height;
+	public double tick;
+	public int width;
+	public int height;
 
 	protected int scale;
 	private int updaterate = 60;
@@ -61,8 +62,8 @@ public abstract class Game implements Runnable {
 
 	public Game(String name, int width, int height, int scale) {
 		this.name = name;
-		Game.width = width;
-		Game.height = height;
+		this.width = width;
+		this.height = height;
 		this.scale = scale;
 
 		graphics = new Renderer(width, height, scale);
@@ -94,6 +95,8 @@ public abstract class Game implements Runnable {
 	 * @param go the GameObject you wish to pass
 	 */
 	public void add(GameObject go) {
+		if(go == null) return;
+		
 		if (go instanceof Stage) {
 			stages.add((Stage) go);
 		} else {
@@ -226,7 +229,7 @@ public abstract class Game implements Runnable {
 
 			if (System.currentTimeMillis() - timer >= 1000) {
 				lastFPS = frames;
-				frame.setTitle("Normal | " + ("FPS: " + frames + ", UPS: " + updates));
+				frame.setTitle(name + " | " + ("FPS: " + frames + ", UPS: " + updates));
 				frames = 0;
 				updates = 0;
 				timer = System.currentTimeMillis();
@@ -304,12 +307,21 @@ public abstract class Game implements Runnable {
 		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
 		
 		mousePressed(mouseX, mouseY);
+		
+		if(currentStage != null) {
+			mouseX-=currentStage.getX();
+			mouseY-=currentStage.getY();
+			
+		}
+		
 		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
 			if (currentGameObjects.get(i) instanceof Clickable) {
 				if (currentGameObjects.get(i).containsPoint(mouseX, mouseY)) {
 					if (((Clickable) currentGameObjects.get(i)).onClickPressed(mouseX, mouseY))
 						break;
 
+				}else{
+					((Clickable) currentGameObjects.get(i)).onClickOutside();
 				}
 			}
 			if (currentGameObjects.get(i) instanceof Group) {
@@ -327,7 +339,9 @@ public abstract class Game implements Runnable {
 				if (gos.get(i).containsPoint(mouseX, mouseY)) {
 					if (((Clickable) gos.get(i)).onClickPressed(mouseX, mouseY))
 						break;
-
+				}
+				else{
+					((Clickable) gos.get(i)).onClickOutside();
 				}
 			}
 			if (gos.get(i) instanceof Group) {
@@ -343,6 +357,11 @@ public abstract class Game implements Runnable {
 		mouseReleased(mouseX, mouseY);
 		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
 
+		if(currentStage != null) {
+			mouseX-=currentStage.getX();
+			mouseY-=currentStage.getY();
+			
+		}
 		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
 			if (currentGameObjects.get(i) instanceof Clickable) {
 				Clickable cl = (Clickable) currentGameObjects.get(i);
@@ -391,11 +410,38 @@ public abstract class Game implements Runnable {
 
 	public void keyPressed(KeyEvent e) {
 		keys[e.getKeyCode()] = true;
+		keyPressed(e.getKeyCode());
+		notifyKeyPressedToNodes(e, currentStage == null ? gameObjects : currentStage.getGameObjects());
+	}
+
+	private void notifyKeyPressedToNodes(KeyEvent e, ArrayList<GameObject> currentGameObjects) {
+
+		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
+			if (currentGameObjects.get(i) instanceof Typeable) {
+				Typeable tp = (Typeable) currentGameObjects.get(i);
+				if(tp.hasFocus()) {
+					tp.onKey(e);
+				}
+			}
+			if (currentGameObjects.get(i) instanceof Group) {
+				Group g = (Group) currentGameObjects.get(i);
+				notifyKeyPressedToNodes(e, g.getChildren());
+			}
+		}
+	}
+
+	public  void keyPressed(int keyCode) {
+		
 	}
 
 	public void keyReleased(KeyEvent e) {
 		keys[e.getKeyCode()] = false;
+		keyReleased(e.getKeyCode());
 
+	}
+	
+	public  void keyReleased(int keyCode) {
+		
 	}
 
 	public void mouseDragged(MouseEvent e) {
@@ -403,6 +449,12 @@ public abstract class Game implements Runnable {
 		int mouseY = (e.getY()) / scale;
 		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
 
+		if(currentStage != null) {
+			mouseX-=currentStage.getX();
+			mouseY-=currentStage.getY();
+			
+		}
+		
 		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
 			if (currentGameObjects.get(i) instanceof Clickable) {
 				Clickable cl = (Clickable) currentGameObjects.get(i);
@@ -434,6 +486,12 @@ public abstract class Game implements Runnable {
 		int mouseY = (e.getY()) / scale;
 		ArrayList<GameObject> currentGameObjects = currentStage == null ? gameObjects : currentStage.getGameObjects();
 		mouseMoved(mouseX, mouseY);
+		
+		if(currentStage != null) {
+			mouseX-=currentStage.getX();
+			mouseY-=currentStage.getY();
+			
+		}
 		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
 			if (currentGameObjects.get(i) instanceof Clickable) {
 				Clickable cl = (Clickable) currentGameObjects.get(i);
@@ -565,5 +623,13 @@ public abstract class Game implements Runnable {
 				p.update();
 			}
 		}
+	}
+
+	public float getWidth() {
+		return width;
+	}
+
+	public float getHeight() {
+		return height;
 	}
 }

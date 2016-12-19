@@ -32,6 +32,10 @@ public class Sprite extends GameObject {
 		
 	}
 	
+	public Sprite(String string) throws IOException {
+		this(string, 0, 0);
+	}
+
 	public void makeCollidable() {
 		setupShape();
 	}

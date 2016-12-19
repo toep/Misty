@@ -148,4 +148,8 @@ public class Button extends GameObject implements Clickable{
 		return false;
 	}
 
+	@Override
+	public void onClickOutside() {
+	}
+
 }

@@ -77,6 +77,7 @@ public class Bitmap {
 	}
 
 	public int getRGB(int tx, int ty) {
+		if(tx < 0 || ty < 0 || tx > width || ty > height) return -1;
 		return pixels[tx + ty * width];
 	}
 }

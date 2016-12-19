@@ -103,7 +103,7 @@ public class Renderer extends JPanel {
 	}
 
 	/**
-	 * draws a string to pixel array in a black color with scale 1
+	 * draws a string to pixel array in a white color with scale 1
 	 * @param str the string being drawn
 	 * @param xf x position
 	 * @param yf y position
@@ -111,7 +111,7 @@ public class Renderer extends JPanel {
 	public void drawString(String str, float xf, float yf) {
 		int x = (int) xf;
 		int y = (int) yf;
-		drawString(str, x, y, 0xff000000, 1.0f);
+		drawString(str, x, y, 0xffffffff, 1.0f);
 	}
 
 	/**
@@ -249,7 +249,7 @@ public class Renderer extends JPanel {
 		}
 		x+=xoffset;
 		y+=yoffset;
-		if (x == 0 && y == 0 && bm.getWidth() == Game.width && bm.getHeight() == Game.height) {
+		if (x == 0 && y == 0 && bm.getWidth() == Game.getCurrent().width && bm.getHeight() == Game.getCurrent().height) {
 			System.arraycopy(bm.pixels, 0, pixels, 0, pixels.length);
 		} else
 			for (int line = 0; line < bm.getHeight(); line++) {

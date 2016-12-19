@@ -7,10 +7,16 @@ import com.misty.engine.Game;
 
 public class Group extends GameObject {
 
-	ArrayList<GameObject> children = new ArrayList<GameObject>();
+	protected ArrayList<GameObject> children = new ArrayList<GameObject>();
 	
 	public Group() {
 		
+	}
+	public Group(int x, int y, int width, int height) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
 	}
 	
 	public void add(GameObject gameObject) {
@@ -19,6 +25,8 @@ public class Group extends GameObject {
 
 	public ArrayList<GameObject> getChildren() {
 		return children;
+	}
+	public void setbackgroundColor(int i) {
 	}
 	
 	@Override

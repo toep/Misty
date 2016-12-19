@@ -17,4 +17,5 @@ public interface Clickable {
 	boolean isMouseOver();
 	public void onclickReleasedOutside();
 
+	public void onClickOutside();
 }

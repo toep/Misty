@@ -41,12 +41,12 @@ public class TileMap extends GameObject {
 				if(data[d][i] != 0)
 					r.drawBitmap(ts.bms[data[d][i]-1], (int)x+((i%width)*ts.width), (int)y+(i/width)*ts.height);
 				wCount++;
-				if(wCount > Game.width/ts.width+1) {
+				if(wCount > Game.getCurrent().width/ts.width+1) {
 					i+=width-wCount;
 					wCount = 0;
 					hCount++;
 					
-					if(hCount > Game.height/ts.height+1)
+					if(hCount > Game.getCurrent().height/ts.height+1)
 						break;
 				}
 				

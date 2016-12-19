@@ -52,6 +52,7 @@ public class Keys {
 	public final static int DOWN = KeyEvent.VK_DOWN;
 	public final static int LEFT = KeyEvent.VK_LEFT;
 	public final static int RIGHT = KeyEvent.VK_RIGHT;
+	public static final int ESC = KeyEvent.VK_ESCAPE;
 
 	
 	//public final static int KEY_A = KeyEvent.VK_A;

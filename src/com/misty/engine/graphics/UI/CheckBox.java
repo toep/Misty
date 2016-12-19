@@ -92,4 +92,8 @@ public class CheckBox extends GameObject implements Clickable {
 		return false;
 	}
 
+	@Override
+	public void onClickOutside() {
+	}
+
 }
