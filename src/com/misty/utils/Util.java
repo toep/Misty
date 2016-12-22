@@ -19,6 +19,7 @@ public class Util {
 	private static float PIO2 = (float) (Math.PI / 2);
 	private static int[] ids = new int[16384];
 	private static int idsIndex = 0;
+	private static Random rn = new Random();
 	static {
 		for (int i = 0; i < sin.length; i++) {
 			sin[i] = (float) Math.sin((double) (i * 2.0f * Math.PI / sin.length));
@@ -189,7 +190,8 @@ public class Util {
 		int h = bm.getHeight();
 
 		// increase array size from 255 if needed
-		int[] vertex_x = new int[1024], vertex_y = new int[1024], vertex_k = new int[1024];
+		int arrSize = 1024;
+		int[] vertex_x = new int[arrSize], vertex_y = new int[arrSize], vertex_k = new int[arrSize];
 
 		int numPoints = 0, tx = 0, ty = 0, fy = -1, lx = 0, ly = 0;
 		vertex_x[0] = 0;
@@ -275,6 +277,18 @@ public class Util {
 
 	private static double PointDirection(double xfrom, double yfrom, double xto, double yto) {
 		return Math.atan2(yto - yfrom, xto - xfrom) * 180 / Math.PI;
+	}
+
+	public static int random(int i, int j) {
+		return rn.nextInt(j-i) + i;
+	}
+	
+	public static int random(int i) {
+		return rn.nextInt(i);
+	}
+
+	public static int map(int x, int in_min, int in_max, int out_min, int out_max) {
+		return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 	}
 
 	

@@ -34,7 +34,10 @@ public class Renderer extends JPanel {
 	private int xoffset = 0;
 	private int yoffset = 0;
 	
-	
+	private int clipx;
+	private int clipy;
+	private int clipwidth;
+	private int clipheight;
 	
 	
 	public void setRenderingMode(int r) {
@@ -68,6 +71,10 @@ public class Renderer extends JPanel {
 		this.scale = scale;
 		this.width = w;
 		this.height = h;
+		clipx = 0;
+		clipy = 0;
+		clipwidth = w;
+		clipheight = h;
 		image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 
@@ -84,7 +91,12 @@ public class Renderer extends JPanel {
 		this(w, h, 1);
 	}
 
-	
+	public void resetClip() {
+		clipx = 0;
+		clipy = 0;
+		clipwidth = width;
+		clipheight = height;
+	}
 	
 	public void draw() {
 		render();
@@ -108,9 +120,7 @@ public class Renderer extends JPanel {
 	 * @param xf x position
 	 * @param yf y position
 	 */
-	public void drawString(String str, float xf, float yf) {
-		int x = (int) xf;
-		int y = (int) yf;
+	public void drawString(String str, float x, float y) {
 		drawString(str, x, y, 0xffffffff, 1.0f);
 	}
 
@@ -122,7 +132,9 @@ public class Renderer extends JPanel {
 	 * @param color in 0xaarrggbb format
 	 * @param scale
 	 */
-	public void drawString(String str, int x, int y, int color, float scale) {
+	public void drawString(String str, float fx, float fy, int color, float scale) {
+		int x = (int)fx;
+		int y = (int)fy;
 		int row = 0;
 		int j = 0;
 		x+=xoffset;
@@ -150,7 +162,7 @@ public class Renderer extends JPanel {
 	 * draws a string @str at position @x and @x in pixels*gameScale with the
 	 * color @0xaarrggbb
 	 */
-	public void drawString(String str, int x, int y, int color) {
+	public void drawString(String str, float x, float y, int color) {
 		drawString(str, x, y, color, 1f);
 	}
 
@@ -170,6 +182,13 @@ public class Renderer extends JPanel {
 		Bitmap bm = font.getFontChar(c);
 		if (bm == null || x + bm.getWidth() * scale < 0 || y + bm.getHeight() * scale < 0 || x > width || y > height)
 			return;
+		int height = bm.getHeight();
+		boolean top = false;
+		if(y < clipy) {
+			height = height-clipy+y;
+			y = clipy;
+			top = true;
+		}
 		int i = 0;
 		int j = 0;
 		int maxi = (int) (bm.getWidth() * scale);
@@ -177,8 +196,19 @@ public class Renderer extends JPanel {
 			i = -x;
 		if (x + bm.getWidth() * scale > width)
 			maxi = width - x;
+		if(y-clipy+height > clipheight) {
+			height = clipheight-y+clipy;
+		}
+		int start = bm.getHeight()-height;
 		int startPos = (y) * this.width + (x);
-		for (j = 0; j < bm.getHeight() * scale; j++) {
+		
+		int init = 0;
+		int end = 0;
+		if(top) {
+			init = start;
+			end = start;
+		}
+		for (j = init; j < (height + end) * scale; j++) {
 			for (int ii = i; ii < maxi; ii++) {
 				int pix = bm.pixels[(int) (j / scale) * bm.getWidth() + (int) (ii / scale)];
 				if (pix == 0xff000000) {
@@ -192,12 +222,13 @@ public class Renderer extends JPanel {
 
 	@Deprecated
 	public void drawBitmap_slow(Bitmap bm, int x, int y) {
+		x+=xoffset;
+		y+=yoffset;
 		if (x + bm.getWidth() < 0 || y + bm.getHeight() < 0 || x > width)
 			return;
 		int i = 0;
 		int j = 0;
-		x+=xoffset;
-		y+=yoffset;
+		
 		int maxi = bm.getWidth();
 		if (x < 0)
 			i = -x;
@@ -261,6 +292,9 @@ public class Renderer extends JPanel {
 		if (y > this.height || x < -width || y < 0)
 			return;
 		int startIndex = 0;
+		if(y-clipy+height > clipheight) {
+			height = clipheight-y+clipy;
+		}
 		if (width2 + (x + y * width) > pixels.length) {
 			width2 = pixels.length - (x + y * width);
 			if (width2 < 0)
@@ -396,6 +430,10 @@ public class Renderer extends JPanel {
 		int y = (int) yf + yoffset;
 		if (x + width < 0 || y + height < 0 || x > this.width)
 			return;
+		if(y < clipy) {
+			height = height-clipy+y;
+			y = clipy;
+		}
 		int i = 0;
 		int j = 0;
 		int maxi = width;
@@ -404,6 +442,10 @@ public class Renderer extends JPanel {
 		if (x + width > this.width)
 			maxi = this.width - x;
 		int startPos = (y) * this.width + (x);
+		if(y-clipy+height > clipheight) {
+			height = clipheight-y+clipy;
+		}
+		//TODO clip width..
 		for (j = 0; j < height; j++) {
 			for (int ii = i; ii < maxi; ii++) {
 				putPixel(startPos + ii, color);
@@ -419,6 +461,11 @@ public class Renderer extends JPanel {
 		int y = (int) yf + yoffset;
 		if (x + width < 0 || y + height < 0 || x > this.width)
 			return;
+		if(y < clipy) {
+			height = height-clipy+y;
+			y = clipy;
+		}
+		
 		int startPos = y * this.width + x;
 		int ix = 0;
 		int widthi = width;
@@ -426,12 +473,18 @@ public class Renderer extends JPanel {
 			ix = -x;
 		if (x + width > this.width)
 			widthi = this.width - x;
+		if(y-clipy+height > clipheight) {
+			height = clipheight-y+clipy;
+		}
+		
+		//TODO clip width
+		if(y < clipy+clipheight && y+height > clipy)
 		for (; ix < widthi; ix++) {
 			int in = startPos + ix;
 			putPixel(in, color);
 			putPixel(in + (height - 1) * this.width, color);
 		}
-
+		
 		if (x + width - 1 < this.width && x + width >= 0)
 			for (int i = 1; i < height - 1; i++) {
 				putPixel(startPos + width - 1 + i * this.width, color);
@@ -445,6 +498,7 @@ public class Renderer extends JPanel {
 	public void putPixel(int index, int color) {
 		// if (index < pixels.length && index >= 0 && (color & 0xff000000) !=
 		// 0x00) {
+		
 		if ((color & 0xff000000) != 0x00 && !(index >= pixels.length || index < 0)) {
 			if (renderingMode == RENDERING_MODE_NORMAL) {
 				pixels[index] = color;
@@ -482,6 +536,13 @@ public class Renderer extends JPanel {
 	public void translate(float x, float y) {
 		xoffset+=x;
 		yoffset+=y;
+	}
+
+	public void setClip(int x, int y, int width, int height) {
+		clipx = x;
+		clipy = y;
+		clipwidth = width;
+		clipheight = height;
 	}
 
 }

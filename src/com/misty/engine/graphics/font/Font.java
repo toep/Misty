@@ -14,6 +14,7 @@ public class Font {
 	
 	public static final Font defaultFont = new Font(Font.class.getClassLoader().getResourceAsStream("font.png"), 8, 8);
 	public static final Font regularFont = new Font(Font.class.getClassLoader().getResourceAsStream("pixel_std_regular.png"), 7, 9);
+	public static final Font bold = new Font(Font.class.getClassLoader().getResourceAsStream("font_bold.png"), 8, 8);
 
 	
 	public Font(String res, int w, int h) {
@@ -53,5 +54,9 @@ public class Font {
 
 	public int getCharacterWidth() {
 		return font[0].getWidth();
+	}
+
+	public int getCharacterHeight() {
+		return font[0].getHeight();
 	}
 }

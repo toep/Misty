@@ -1,5 +1,4 @@
 
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 
@@ -22,12 +21,15 @@ import com.misty.listeners.Keys;
 public class TestDemo extends Game {
 
 	String sample = "Welcome to my game";
-	int yOffset = 10;
+	int yOffset = 100;
 	int x, y;
 	Animation ani;
 	Sprite background;
 	TileMap testMap;
 	ParticleEmitter emitter;
+	
+	Stage mainMenu;
+	
 	public TestDemo(int width, int height, int scale) {
 		super("TileMap Demo", width, height, scale);
 		setClearColor(0xff87CEEB);
@@ -52,7 +54,7 @@ public class TestDemo extends Game {
 		add(testMap);
 		add(background);
 		
-		Stage mainMenu = new Stage();
+		mainMenu = new Stage();
 		Button start = new Button("Click to start");
 		start.setPosition(width/2-start.getWidth()/2, height/2-start.getHeight()/2);
 		start.addButtonListener(() -> {
@@ -96,12 +98,20 @@ public class TestDemo extends Game {
 		if(isKeyDown(Keys.DOWN)) testMap.move(0, -4);
 	}
 	
+	public void keyPressed(int key) {
+		System.out.println("fsd");
+		if(key == Keys.ESC) {
+			setStage(mainMenu);
+		}
+	}
+	
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		yOffset -= e.getWheelRotation()*5;
 		ani.setScale(3f);
 		ani.setRotation(yOffset/50f);
 	}
+	
 	
 	
 	

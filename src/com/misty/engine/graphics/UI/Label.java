@@ -2,6 +2,7 @@ package com.misty.engine.graphics.UI;
 
 import java.awt.Shape;
 
+import com.misty.engine.Game;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Renderer;
 
@@ -14,12 +15,12 @@ public class Label extends GameObject {
 		this.str = str;
 		this.x = x;
 		this.y = y;
-		this.width = str.length()*8;
-		this.height = 12;
+		this.width = str.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
+		this.height = Game.getCurrent().getRenderer().getCurrentFont().getCharacterHeight();
 	}
 	public void setText(String str) {
 		this.str = str;
-		this.width = str.length()*8;
+		this.width = str.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
 	}
 	public String getText() {
 		return str;
@@ -30,6 +31,9 @@ public class Label extends GameObject {
 	public Label() {
 		this("", 0, 0);
 	}
+	public Label(String str) {
+		this(str, 0, 0);
+	}
 	@Override
 	public Shape getShape() {
 		return null;
@@ -37,7 +41,7 @@ public class Label extends GameObject {
 
 	@Override
 	public void draw(Renderer r) {
-		r.drawString(str, (int)x, (int)y, color);
+		r.drawString(str, (int)x, (int)y+2, color, scale);
 	}
 
 	@Override

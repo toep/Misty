@@ -21,6 +21,10 @@ public class CheckBox extends GameObject implements Clickable {
 		height = 12;
 	}
 	
+	public CheckBox() {
+		this(0, 0);
+	}
+
 	public boolean isChecked() {
 		return checked;
 	}
@@ -45,7 +49,7 @@ public class CheckBox extends GameObject implements Clickable {
 		checked = !checked;
 		clickDown = false;
 		listeners.forEach(e -> e.checked(checked));
-		return false;
+		return true;
 	}
 
 	@Override

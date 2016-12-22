@@ -43,24 +43,30 @@ public class Bitmap {
 		this(Util.getBufferedImageFromFile(string));
 	}
 
-	public void flipX() {
+	public Bitmap getFlipY() {
 		int[] newPixels = new int[pixels.length];
 		for (int j = 0; j < height; j++) {
 			for (int i = 0; i < width; i++) {
 				newPixels[j * width + i] = pixels[j * width + width - i - 1];
 			}
 		}
-		pixels = newPixels;
+		return new Bitmap(width, height).withPixels(newPixels);
 	}
 
-	public void flipY() {
+	private Bitmap withPixels(int[] newPixels) {
+		pixels = newPixels;
+		determineTransparency();
+		return this;
+	}
+
+	public Bitmap getFlipX() {
 		int[] newPixels = new int[pixels.length];
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
 				newPixels[j * width + i] = pixels[(height - j - 1) * width + i];
 			}
 		}
-		pixels = newPixels;
+		return new Bitmap(width, height).withPixels(newPixels);
 	}
 
 

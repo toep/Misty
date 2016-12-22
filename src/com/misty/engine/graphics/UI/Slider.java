@@ -59,7 +59,7 @@ public class Slider extends GameObject implements Clickable {
 	@Override
 	public boolean onClickReleased(int x, int y) {
 		dragging = false;
-		return true;
+		return false;
 	}
 
 	@Override
@@ -86,9 +86,9 @@ public class Slider extends GameObject implements Clickable {
 	public void draw(Renderer r) {
 		r.fillColoredRect(x, y, width, height, 0xffaeaeae);
 		int knobColor = hovering?0xfff3f3f3:0xffe3e3e3;
-		r.fillColoredRect(x+value*(width-knobWidth), y, knobWidth, height, knobColor);
+		r.fillColoredRect(x+value*(width-knobWidth-2)+1, y, knobWidth, height, knobColor);
 		if(highlighted) {
-			r.fillColoredRect(x, y, (int)(value*(width-knobWidth)), height, knobColor&highlightColor);
+			r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, knobColor&highlightColor);
 		}
 		r.drawColoredRect(x, y, width, height, Color.BLACK.getRGB());
 
@@ -102,7 +102,7 @@ public class Slider extends GameObject implements Clickable {
 	@Override
 	public boolean onDragged(int x, int y) {
 		if(dragging) {
-			float xoff = (x-this.x)/(width);
+			float xoff = (x-knobWidth/2-this.x)/(width-knobWidth);
 			value = xoff;
 			if(value < 0) value = 0;
 			if(value > 1) value = 1;

@@ -21,6 +21,8 @@ public class Button extends GameObject implements Clickable{
 	private boolean mouseOnButton = false;
 
 	ArrayList<ButtonListener> listeners;
+	private int titleColor = 0xffffffff;
+	
 	public Button() {
 		title = "";
 		width = 20;
@@ -86,7 +88,7 @@ public class Button extends GameObject implements Clickable{
 	@Override
 	public void draw(Renderer r) {
 		r.fillColoredRect(x, y, width, height, color);
-		r.drawString(title, x+5, y+height/2-4);
+		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, titleColor);
 		
 		if(drawBorder)
 			r.drawColoredRect(x, y, width, height, borderColor);
@@ -150,6 +152,10 @@ public class Button extends GameObject implements Clickable{
 
 	@Override
 	public void onClickOutside() {
+	}
+
+	public void setTitleColor(int color) {
+		titleColor  = color;
 	}
 
 }

@@ -2,13 +2,21 @@ package com.misty.engine.graphics;
 
 import java.awt.Shape;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import com.misty.engine.Game;
 
 public class Group extends GameObject {
 
 	protected ArrayList<GameObject> children = new ArrayList<GameObject>();
+	private boolean contained = false;
 	
+	public boolean isContained() {
+		return contained;
+	}
+	public void contain() {
+		contained = true;
+	}
 	public Group() {
 		
 	}
@@ -20,9 +28,26 @@ public class Group extends GameObject {
 	}
 	
 	public void add(GameObject gameObject) {
+		if(gameObject == this) return;
+		if(gameObject instanceof Group) {
+			if(((Group)gameObject).isContained()) return;
+			((Group)gameObject).contain();
+		}
 		children.add(gameObject);
+		Collections.sort(children);
+		
+		pack();
 	}
 
+	public void pack() {
+		//int x2 = 0, y2 = 0;
+		for(GameObject g: children) {
+			width = Math.max(width, g.getX()+g.getWidth());
+			height = Math.max(height, g.getY()+g.getHeight());
+		}
+		//width = x2;
+		//height = y2;
+	}
 	public ArrayList<GameObject> getChildren() {
 		return children;
 	}

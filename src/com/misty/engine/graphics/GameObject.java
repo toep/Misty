@@ -1,5 +1,6 @@
 package com.misty.engine.graphics;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
@@ -105,5 +106,19 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	 */
 	public boolean containsPoint(int x, int y) {
 		return x >= this.x && x < this.x + width && y >= this.y && y < this.y + height;
+	}
+	
+	public boolean intersects(GameObject other) {
+		Rectangle t = collisionRectangle();
+		Rectangle o = other.collisionRectangle();
+		return t.intersects(o);
+	}
+	
+	public Rectangle collisionRectangle() {
+		return new Rectangle((int)x, (int)y, width, height);
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
 	}
 }

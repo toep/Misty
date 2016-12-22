@@ -9,7 +9,4 @@ public class Stage extends Group {
 		
 	}
 
-	public ArrayList<GameObject> getGameObjects() {
-		return children;
-	}
 }
