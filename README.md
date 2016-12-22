@@ -1,2 +1,2 @@
 # Misty
-A 2D pixel game engine
+A 2D graphics framework/game engine
