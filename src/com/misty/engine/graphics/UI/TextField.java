@@ -2,9 +2,11 @@ package com.misty.engine.graphics.UI;
 
 import java.awt.Shape;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import com.misty.engine.Game;
 import com.misty.engine.graphics.Renderer;
+import com.misty.engine.graphics.UI.listeners.ReturnListener;
 import com.misty.listeners.Keys;
 
 public class TextField extends Label implements Clickable, Typeable {
@@ -15,7 +17,7 @@ public class TextField extends Label implements Clickable, Typeable {
 	private boolean resizable = true;
 	private int maxSize = 14;
 	private int caret = 0;
-	
+	private ArrayList<ReturnListener> returnListeners = new ArrayList<ReturnListener>();
 	public TextField(String string) {
 		this(string, 0, 0);
 	}
@@ -34,6 +36,11 @@ public class TextField extends Label implements Clickable, Typeable {
 	public boolean isPressed() {
 		
 		return false;
+	}
+	
+	public void setWidth(int width) {
+		this.width = width;
+		maxSize = width/Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()-1;
 	}
 
 	@Override
@@ -108,7 +115,7 @@ public class TextField extends Label implements Clickable, Typeable {
 
 	@Override
 	public boolean onKey(KeyEvent e) {
-		if((e.getKeyCode() == 32 || (e.getKeyCode() >= 42 && e.getKeyCode() <= 122)) && str.length() < maxSize) {
+		if((e.getKeyCode() == 32 || (e.getKeyCode() >= 42 && e.getKeyCode() <= 122) || e.getKeyCode() == 222) && str.length() < maxSize) {
 			String before = str.substring(0, caret);
 			String after = str.substring(caret, str.length());
 			setText(before + e.getKeyChar() + after);
@@ -127,6 +134,9 @@ public class TextField extends Label implements Clickable, Typeable {
 				//caret--;
 			}
 		}
+		if(e.getKeyCode() == Keys.ENTER) {
+			returnListeners.forEach(l -> l.onReturn());
+		}
 		if(e.getKeyCode() == Keys.LEFT) {
 			caret--;
 			if(caret < 0) caret = 0;
@@ -135,23 +145,23 @@ public class TextField extends Label implements Clickable, Typeable {
 			caret++;
 			if(caret > str.length()) caret = str.length();
 		}
+		if(caret > str.length()) {
+			caret = str.length();
+		}
 		return true;
 	}
 	
 	public void setText(String str) {
 		this.str = str;
-		//if(str.length() < 1) {
-			//this.width = 1*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()+4;
-		//} else if(str.length() > maxSize) {
-			this.width = maxSize*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()+4;
-		//}else 
-		//this.width = str.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()+4;
-			
 	}
 
 	@Override
 	public boolean hasFocus() {
 		return focus;
+	}
+
+	public void addReturnListener(ReturnListener rl) {
+		returnListeners.add(rl);
 	}
 
 }

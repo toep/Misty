@@ -36,24 +36,19 @@ public class Test extends Game {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Button bb = new Button("Click me", 20);
+		Button bb = new Button("Click me");
 		bb.setTitleColor(0xff43fe43);
 		bb.addButtonListener(() -> {
 			bb.setText("clicked this yo");
 		});
 		bb.setPosition(140, 140);
 
-		Button b3 = new Button();
-		b3.setColor(0xff4312fe);
-		b3.setPressedColor(0xffaefe32);
-		b3.setPosition(100, 103);
-		b3.setText("This text is set after");
+		
 		cb = new CheckBox(140, 165);
 
 		testLabel = new Label("Hello", 152, 165);
 		
 		add(testLabel);
-		Stage menu = new Stage();
 
 		cb.addCheckListener(checked -> {
 			testLabel.setText("The checkbox is now " + (checked ? "on" : "off"));
@@ -77,10 +72,9 @@ public class Test extends Game {
 		});
 		
 		add(bb);
-		add(b3);
 		add(cb);
 		Group g = new Group();
-		g.setPosition(220, 250);
+		g.setPosition(220, 300);
 		g.add(redSlider);
 		g.add(greenSlider);
 		g.add(blueSlider);
@@ -89,22 +83,17 @@ public class Test extends Game {
 		greenSlider.setHighlighted(true);
 		//add(g);
 		
-		menu.add(g);
+		add(g);
 		
-		Button menuGoBack = new Button("Done");
-		menuGoBack.setPosition(100, 180);
-		menu.add(menuGoBack);
-		menuGoBack.addButtonListener(() -> {
-			setStage(null);
-		});
-		addStage(menu);
+		
+		
 		
 		Button menuGo = new Button("Change color!");
 		menuGo.setTitleColor(0xffba4354);
 		menuGo.setPosition(100, 180);
 		add(menuGo);
 		menuGo.addButtonListener(() -> {
-			setStage(menu);
+			//setStage(menu);
 		});
 		
 		
@@ -113,11 +102,11 @@ public class Test extends Game {
 		add(table);
 		table.setFixedHeight(97);
 		table.setAllignment(Table.ALLIGN_CENTER);
-		table.add(new CBWL("Send nudes"));
+		table.add(new CBWL("<- checkbox"));
 		table.add(new Button("row1 is longer"));
-		table.add(new LabelNTextField("Name: ", new TextField("Hallo")));
-		table.add(new Button("row2", 40));
-		table.add(new Button("row3", 80));
+		table.add(new LabelNTextField("Name: ", new TextField("John")));
+		table.add(new Button("row2"));
+		table.add(new Button("row3"));
 		table.add(new LabelNTextField("sdf: ", new TextField("Hallo")));
 		for(int i = 0; i < 200; i++) table.add(new Button("row " + (i+4)));
 		//setStage(menu);
@@ -163,5 +152,9 @@ public class Test extends Game {
 	@Override
 	public void update() {
 
+	}
+
+	@Override
+	public void setup() {
 	}
 }

@@ -17,7 +17,7 @@ public class Server implements Runnable {
 
 	public List<ClientSocket> clients = new ArrayList<ClientSocket>();
 	private LinkedBlockingDeque<SendInfo> sendQueue = new LinkedBlockingDeque<SendInfo>();
-	private ServerListener serverlistener;
+	private ArrayList<ServerListener> serverlisteners = new ArrayList<ServerListener>();
 	private ServerSocket socket;
 	private int port;
 	private boolean running = false;
@@ -106,6 +106,7 @@ public class Server implements Runnable {
 					} catch (IOException e) {
 						System.err.println("Unable to send data to client. removing from list");
 						userDisconnected(getClientSocket(si.socket));
+						si = null;
 						// clients.remove();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -131,7 +132,7 @@ public class Server implements Runnable {
 						System.out.println("a client has connected " + s.getInetAddress());
 						ClientSocket cs = new ClientSocket(Util.randomUniqueID(), s);
 						clients.add(cs);
-						serverlistener.clientHasConnected(cs);
+						serverlisteners.forEach(e -> e.clientHasConnected(cs));
 						if(firstConnection()) {
 							manageClients();
 						}
@@ -171,7 +172,7 @@ public class Server implements Runnable {
 					lastTime = now;
 					while(deltaupdate >= 1) {
 						//here we update logic server side
-						serverlistener.serverUpdate();
+						serverlisteners.forEach(e -> e.serverUpdate());
 						deltaupdate--;
 					}
 				}
@@ -180,8 +181,8 @@ public class Server implements Runnable {
 		manage.start();
 	}
 
-	public void setListener(ServerListener sl) {
-		serverlistener = sl;
+	public void addListener(ServerListener sl) {
+		serverlisteners.add(sl);
 	}
 
 	private void receive(ClientSocket s) {
@@ -235,7 +236,7 @@ public class Server implements Runnable {
 					ByteBuffer bb = ByteBuffer.wrap(bytes, 0, numOfBytesRead);
 					//Util.printBB(bb);
 					
-					if (serverlistener != null) {
+					if (serverlisteners.size() != 0) {
 						while (bb.hasRemaining()) {
 							byte id = bb.get();
 							if(id <= 0) {
@@ -247,7 +248,7 @@ public class Server implements Runnable {
 							bb.get(payload, 0, size);
 							Packet p = new Packet(id, size, payload);
 							if(s.handShook)
-								serverlistener.receiveDataToServer(s, p);
+								serverlisteners.forEach(e -> e.receiveDataToServer(s, p));
 							else {
 								handleHandshake(s, p);
 							}
@@ -260,8 +261,8 @@ public class Server implements Runnable {
 					catch(Exception e) {
 						System.out.println("a client disconnected unexpectedly!");
 						e.printStackTrace();
-						clients.remove(s);
 						userDisconnected(s);
+						
 						return;
 					}
 
@@ -286,6 +287,7 @@ public class Server implements Runnable {
 				s.handShook = true;
 				Packet idp = new Packet(5, 4);
 				idp.putInt(s.id);
+				System.out.println("handshook done, sending accept packet to client");
 				sendDataHandshake(idp, s);
 			}
 			else {
@@ -341,9 +343,9 @@ public class Server implements Runnable {
 	public void userDisconnected(ClientSocket clientSocket) {
 		if(clientSocket != null) {
 			clients.remove(clientSocket);
-			serverlistener.clientDisconnected(clientSocket);	
-			clientSocket = null;
+			serverlisteners.forEach(e -> e.clientDisconnected(clientSocket));	
 		}
+		//clientSocket = null;
 	}
 
 	public boolean running() {

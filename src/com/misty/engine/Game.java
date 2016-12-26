@@ -38,7 +38,8 @@ public abstract class Game implements Runnable {
 	public double tick;
 	public int width;
 	public int height;
-
+	public int mouseX;
+	public int mouseY;
 	protected int scale;
 	private int updaterate = 60;
 	private int framerate = 60;
@@ -93,7 +94,11 @@ public abstract class Game implements Runnable {
 		}
 		gameStage = new Stage();
 		currentStage = gameStage;
+
+		setup();
 	}
+
+	public abstract void setup();
 
 	public Game(String name, int width, int height) {
 		this(name, width, height, 1);
@@ -107,7 +112,7 @@ public abstract class Game implements Runnable {
 	public void add(GameObject go) {
 		if (go == null)
 			return;
-		gameStage.add(go);		
+		gameStage.add(go);
 	}
 
 	public void addStage(Stage stage) {
@@ -293,7 +298,7 @@ public abstract class Game implements Runnable {
 
 	public void setStage(Stage stage) {
 		currentStage = stage;
-		if(currentStage == null) {
+		if (currentStage == null) {
 			currentStage = gameStage;
 		}
 	}
@@ -329,17 +334,19 @@ public abstract class Game implements Runnable {
 	private void mousePressed(int mouseX, int mouseY, Group group, boolean in) {
 		ArrayList<GameObject> gos = group.getChildren();
 		for (int i = gos.size() - 1; i >= 0; i--) {
-			if (gos.get(i) instanceof Clickable) {
-				if (gos.get(i).containsPoint(mouseX, mouseY) && in) {
-					if (((Clickable) gos.get(i)).onClickPressed(mouseX, mouseY))
-						in = false;
-				} else {
-					((Clickable) gos.get(i)).onClickOutside();
+			if (gos.get(i).isEnabled()) {
+				if (gos.get(i) instanceof Clickable) {
+					if (gos.get(i).containsPoint(mouseX, mouseY) && in) {
+						if (((Clickable) gos.get(i)).onClickPressed(mouseX, mouseY))
+							in = false;
+					} else {
+						((Clickable) gos.get(i)).onClickOutside();
+					}
 				}
-			}
-			if (gos.get(i) instanceof Group) {
-				Group g = (Group) gos.get(i);
-				mousePressed(mouseX - g.getX(), mouseY - g.getY(), g, g.containsPoint(mouseX, mouseY) && in);
+				if (gos.get(i) instanceof Group) {
+					Group g = (Group) gos.get(i);
+					mousePressed(mouseX - g.getX(), mouseY - g.getY(), g, g.containsPoint(mouseX, mouseY) && in);
+				}
 			}
 		}
 	}
@@ -358,19 +365,21 @@ public abstract class Game implements Runnable {
 	private void mouseReleased(int mouseX, int mouseY, Group group, boolean in) {
 		ArrayList<GameObject> gos = group.getChildren();
 		for (int i = gos.size() - 1; i >= 0; i--) {
-			if (gos.get(i) instanceof Clickable) {
-				Clickable cl = (Clickable) gos.get(i);
-				boolean inside = gos.get(i).containsPoint(mouseX, mouseY);
-				if (cl.isPressed() && inside && in) {
-					if (cl.onClickReleased(mouseX, mouseY))
-						break;
-				} else if (cl.isPressed()) {
-					cl.onclickReleasedOutside();
+			if (gos.get(i).isEnabled()) {
+				if (gos.get(i) instanceof Clickable) {
+					Clickable cl = (Clickable) gos.get(i);
+					boolean inside = gos.get(i).containsPoint(mouseX, mouseY);
+					if (cl.isPressed() && inside && in) {
+						if (cl.onClickReleased(mouseX, mouseY))
+							break;
+					} else if (cl.isPressed()) {
+						cl.onclickReleasedOutside();
+					}
 				}
-			}
-			if (gos.get(i) instanceof Group) {
-				Group g = (Group) gos.get(i);
-				mouseReleased(mouseX - g.getX(), mouseY - g.getY(), g, g.containsPoint(mouseX, mouseY) && in);
+				if (gos.get(i) instanceof Group) {
+					Group g = (Group) gos.get(i);
+					mouseReleased(mouseX - g.getX(), mouseY - g.getY(), g, g.containsPoint(mouseX, mouseY) && in);
+				}
 			}
 		}
 	}
@@ -395,20 +404,22 @@ public abstract class Game implements Runnable {
 	private boolean notifyKeyPressedToNodes(KeyEvent e, ArrayList<GameObject> currentGameObjects) {
 		boolean checked = false;
 		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
-			if (currentGameObjects.get(i) instanceof Typeable) {
-				Typeable tp = (Typeable) currentGameObjects.get(i);
-				if (tp.hasFocus()) {
+			if (currentGameObjects.get(i).isEnabled()) {
+				if (currentGameObjects.get(i) instanceof Typeable) {
+					Typeable tp = (Typeable) currentGameObjects.get(i);
+					if (tp.hasFocus()) {
 
-					boolean yes = tp.onKey(e);
-					if (yes) {
-						checked = true;
-						break;
+						boolean yes = tp.onKey(e);
+						if (yes) {
+							checked = true;
+							break;
+						}
 					}
 				}
-			}
-			if (currentGameObjects.get(i) instanceof Group) {
-				Group g = (Group) currentGameObjects.get(i);
-				checked = notifyKeyPressedToNodes(e, g.getChildren());
+				if (currentGameObjects.get(i) instanceof Group) {
+					Group g = (Group) currentGameObjects.get(i);
+					checked = notifyKeyPressedToNodes(e, g.getChildren());
+				}
 			}
 		}
 		return checked;
@@ -437,30 +448,33 @@ public abstract class Game implements Runnable {
 		mouseX -= currentStage.getX();
 		mouseY -= currentStage.getY();
 		mouseDragged(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage);
-			
+
 	}
 
 	private void mouseDragged(int mouseX, int mouseY, Group group) {
 		ArrayList<GameObject> gos = group.getChildren();
 		for (int i = gos.size() - 1; i >= 0; i--) {
-			if (gos.get(i) instanceof Clickable) {
-				Clickable cl = (Clickable) gos.get(i);
-				cl.onDragged(mouseX, mouseY);
-			}
-			if (gos.get(i) instanceof Group) {
-				Group g = (Group) gos.get(i);
-				mouseDragged(mouseX - g.getX(), mouseY - g.getY(), g);
+			if (gos.get(i).isEnabled()) {
+				if (gos.get(i) instanceof Clickable) {
+					Clickable cl = (Clickable) gos.get(i);
+					cl.onDragged(mouseX, mouseY);
+				}
+				if (gos.get(i) instanceof Group) {
+					Group g = (Group) gos.get(i);
+					mouseDragged(mouseX - g.getX(), mouseY - g.getY(), g);
+				}
 			}
 		}
 	}
-	
+
 	public void mouseMoved(int mouseX, int mouseY) {
 
 	}
-	
+
 	public void mouseMoved(MouseEvent e) {
-		int mouseX = (e.getX()) / scale;
-		int mouseY = (e.getY()) / scale;
+		mouseX = (e.getX()) / scale;
+		mouseY = (e.getY()) / scale;
+		
 		mouseMoved(mouseX, mouseY);
 
 		mouseX -= currentStage.getX();
@@ -469,25 +483,25 @@ public abstract class Game implements Runnable {
 		mouseMoved(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage, true);
 	}
 
-	
-
 	private void mouseMoved(int mouseX, int mouseY, Group group, boolean in) {
 		ArrayList<GameObject> gos = group.getChildren();
 		for (int i = gos.size() - 1; i >= 0; i--) {
-			if (gos.get(i) instanceof Clickable) {
-				Clickable cl = (Clickable) gos.get(i);
-				boolean inside = gos.get(i).containsPoint(mouseX, mouseY);
-				if (inside && !cl.isMouseOver() && in) {
-					cl.onHoverEnter();
-				}
-				if (!inside && cl.isMouseOver()) {
-					cl.onHoverExit();
-				}
+			if (gos.get(i).isEnabled()) {
+				if (gos.get(i) instanceof Clickable) {
+					Clickable cl = (Clickable) gos.get(i);
+					boolean inside = gos.get(i).containsPoint(mouseX, mouseY);
+					if (inside && !cl.isMouseOver() && in) {
+						cl.onHoverEnter();
+					}
+					if (!inside && cl.isMouseOver()) {
+						cl.onHoverExit();
+					}
 
-			}
-			if (gos.get(i) instanceof Group) {
-				Group g = (Group) gos.get(i);
-				mouseMoved(mouseX - g.getX(), mouseY - g.getY(), g, g.containsPoint(mouseX, mouseY) && in);
+				}
+				if (gos.get(i) instanceof Group) {
+					Group g = (Group) gos.get(i);
+					mouseMoved(mouseX - g.getX(), mouseY - g.getY(), g, g.containsPoint(mouseX, mouseY) && in);
+				}
 			}
 		}
 	}
@@ -506,13 +520,15 @@ public abstract class Game implements Runnable {
 
 	private void mouseWheelMoved(MouseWheelEvent e, ArrayList<GameObject> currentGameObjects) {
 		for (int i = currentGameObjects.size() - 1; i >= 0; i--) {
-			if (currentGameObjects.get(i) instanceof Scrollable) {
-				Scrollable cl = (Scrollable) currentGameObjects.get(i);
-				cl.onScroll(e.getScrollAmount()*e.getWheelRotation());
-			}
-			if (currentGameObjects.get(i) instanceof Group) {
-				Group g = (Group) currentGameObjects.get(i);
-				mouseWheelMoved(e, g.getChildren());
+			if (currentGameObjects.get(i).isEnabled()) {
+				if (currentGameObjects.get(i) instanceof Scrollable) {
+					Scrollable cl = (Scrollable) currentGameObjects.get(i);
+					cl.onScroll(e.getScrollAmount() * e.getWheelRotation());
+				}
+				if (currentGameObjects.get(i) instanceof Group) {
+					Group g = (Group) currentGameObjects.get(i);
+					mouseWheelMoved(e, g.getChildren());
+				}
 			}
 		}
 	}
@@ -577,11 +593,11 @@ public abstract class Game implements Runnable {
 		}
 	}
 
-	public float getWidth() {
+	public int getWidth() {
 		return width;
 	}
 
-	public float getHeight() {
+	public int getHeight() {
 		return height;
 	}
 }

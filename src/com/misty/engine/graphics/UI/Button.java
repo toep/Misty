@@ -37,13 +37,15 @@ public class Button extends GameObject implements Clickable{
 		listeners = new ArrayList<ButtonListener>();
 	}
 	/**
-	 * creates a button with set text and height
+	 * creates a button with set text and position
 	 * @param string
-	 * @param height
+	 * @param x
+	 * @param y
 	 */
-	public Button(String string, int height) {
+	public Button(String string, int x, int y) {
 		this(string);
-		setHeight(height);
+		setHeight(16);
+		setPosition(x, y);
 	}
 	
 	public void setHeight(int h) {
@@ -88,10 +90,18 @@ public class Button extends GameObject implements Clickable{
 	@Override
 	public void draw(Renderer r) {
 		r.fillColoredRect(x, y, width, height, color);
+		if(!enabled) {
+			r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, titleColor&0xff888888);
+		}else
 		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, titleColor);
 		
-		if(drawBorder)
+		if(drawBorder) {
+			if(enabled) {
 			r.drawColoredRect(x, y, width, height, borderColor);
+			}else {
+				r.drawColoredRect(x, y, width, height, borderColor^0xff000000);
+			}
+		}
 		if(mouseOnButton) {
 			r.drawColoredRect(x, y, width-1, height-1, borderColor);
 		}
@@ -156,6 +166,12 @@ public class Button extends GameObject implements Clickable{
 
 	public void setTitleColor(int color) {
 		titleColor  = color;
+	}
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		mouseOnButton = false;
 	}
 
 }

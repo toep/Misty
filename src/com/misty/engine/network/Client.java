@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +18,7 @@ public class Client {
 	public int attempt = 0;
 	private Socket socket;
 	private Thread connect, send, receive;
-	ClientListener listener;
+	ArrayList<ClientListener> listeners = new ArrayList<ClientListener>();
 	public static int timeout = 1000;
 	public boolean attempingConnection;
 	public boolean handShook = false;
@@ -66,9 +67,12 @@ public class Client {
 					attempingConnection = false;
 					startReceiving();
 					startSendThread();
+					listeners.forEach(l -> l.onConnection(true, "Success"));
 				} catch (IOException e) {
 					System.err.println("Error connecting to " + address + ":" + port + ", " + e.getMessage());
 					attempingConnection = false;
+					String msg = e.getMessage();
+					listeners.forEach(l -> l.onConnection(false, msg));
 
 				}
 			}
@@ -102,8 +106,8 @@ public class Client {
 		send.start();
 	}
 
-	public void setListener(ClientListener listener) {
-		this.listener = listener;
+	public void addListener(ClientListener listener) {
+		this.listeners.add(listener);
 	}
 
 	private void startReceiving() {
@@ -118,7 +122,7 @@ public class Client {
 						if(numOfBytesRead == -1) numOfBytesRead = bytes.length;
 						ByteBuffer bb = ByteBuffer.wrap(bytes, 0, numOfBytesRead);
 						//System.out.println(numOfBytesRead);
-						if (listener != null) {
+						if (listeners.size() != 0) {
 							while (bb.hasRemaining()) {
 								byte id = bb.get();
 								if(id == -1) {
@@ -130,7 +134,7 @@ public class Client {
 								Packet p = new Packet(id, size, payload);
 								
 								if(handShook)
-									listener.receiveDataToClient(p);
+									listeners.forEach(e -> e.receiveDataToClient(p));
 								else {
 									handleHandshake(p);
 								}
@@ -142,9 +146,7 @@ public class Client {
 						}
 
 					} catch (IOException e) {
-						if (listener != null) {
-							listener.disconnectedFromServer();
-						}
+						listeners.forEach(ee -> ee.disconnectedFromServer());
 						break;
 						// e.printStackTrace();
 					}
@@ -165,6 +167,7 @@ public class Client {
 			}
 		}else if(p.id == 5) {
 			handShook = true;
+			p.toPayload();
 			ID = p.getInt();
 		}else if(p.id == 3) {
 			//wrong handshakeKey

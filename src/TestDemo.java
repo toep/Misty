@@ -122,4 +122,11 @@ public class TestDemo extends Game {
 		
 		
 	}
+
+
+
+
+	@Override
+	public void setup() {
+	}
 }

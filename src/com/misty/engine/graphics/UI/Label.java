@@ -16,7 +16,7 @@ public class Label extends GameObject {
 		this.x = x;
 		this.y = y;
 		this.width = str.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
-		this.height = Game.getCurrent().getRenderer().getCurrentFont().getCharacterHeight();
+		this.height = Game.getCurrent().getRenderer().getCurrentFont().getCharacterHeight()+2;
 	}
 	public void setText(String str) {
 		this.str = str;

@@ -18,7 +18,7 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	protected float rotation = 0;
 	protected float scale = 1;
 	protected float rotationPivotX = 0.5f, roationPivotY = 0.5f;//0-1, 0 being top/left and 1 being bottom/right
-	
+	protected boolean enabled = true;
 	public abstract void draw(Renderer r);
 	
 	public abstract void update();
@@ -31,6 +31,10 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	public void setPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
+	}
+	
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 	
 	/**
@@ -120,5 +124,9 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 
 	public void setWidth(int width) {
 		this.width = width;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
 	}
 }

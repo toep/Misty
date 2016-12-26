@@ -1,5 +1,7 @@
 package com.misty.engine.graphics.UI;
 
+import java.util.Iterator;
+
 import com.misty.engine.Game;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Group;
@@ -38,8 +40,10 @@ public class Table extends Group implements Scrollable, Clickable {
 	@Override
 	public void add(GameObject gameObject) {
 		int fh = height;
-		super.add(gameObject);
-		gameObject.setPosition(0, nextY);
+		synchronized(this) {
+			super.add(gameObject);			
+		}
+		gameObject.setPosition(0, nextY-yScroll);
 		nextY+=gameObject.getHeight();
 		width = Math.max(width, gameObject.getWidth()+sliderWidth);
 		if(!fixedHeight)
@@ -79,21 +83,22 @@ public class Table extends Group implements Scrollable, Clickable {
 		r.fillColoredRect(x, y, width, height, 0xff212121);
 		//System.out.println(children.get(0).getY());
 		Game.getCurrent().getRenderer().translate(x, y);
-
-		children.forEach(e -> {
-			//if(e.getY()+e.getHeight() >= yScroll && e.getY() < height)
-			//if(e.getY() + e.getHeight() >= yScroll)
-				e.draw(r);
-		});			
+		synchronized(this) {
+		Iterator<GameObject> it = children.iterator();
+		while(it.hasNext()) {
+			it.next().draw(r);
+		}
+		}
 		Game.getCurrent().getRenderer().translate(-x, -y);
 		//r.drawColoredRect(x, y, width, height, 0xff434332);
 		r.resetClip();
-		r.drawColoredRect(x-1, y-1, width+2, height+2, 0xffff4300);
+		if(nextY > height && nextY != 0) {
 		
 		r.fillColoredRect(x+width-sliderWidth, y, 10, height, 0xff434332);
-		int yPos = Util.map(yScroll, 0, nextY-height, 0, height-10);
-		r.fillColoredRect(x+width-sliderWidth, y+yPos, 10, 10, 0xffffffff);
-		r.drawColoredRect(x+width-sliderWidth+1, y+yPos+1, 10-2, 10-2, 0xffe3e3e3);
+			int yPos = Util.map(yScroll, 0, nextY-height, 0, height-10);
+			r.fillColoredRect(x+width-sliderWidth, y+yPos, 10, 10, 0xffffffff);
+			r.drawColoredRect(x+width-sliderWidth+1, y+yPos+1, 10-2, 10-2, 0xffe3e3e3);			
+		}
 
 	}
 	@Override
@@ -122,7 +127,7 @@ public class Table extends Group implements Scrollable, Clickable {
 	}
 	@Override
 	public boolean onClickPressed(int x, int y) {
-		if(x > this.x+width-sliderWidth) {
+		if(x > this.x+width-sliderWidth && nextY-height != 0) {
 			int yPos = Util.map(yScroll, 0, nextY-height, 0, height-10);
 			if(y >= yPos+this.y && y <= yPos+this.y+sliderWidth) {
 				dragging = true;
