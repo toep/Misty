@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Group;
 import com.misty.engine.graphics.Particle;
@@ -219,7 +220,7 @@ public abstract class Game implements Runnable {
 					drawGameObjects();
 					draw(graphics);
 					if (showFPS) {
-						graphics.drawString("FPS: " + lastFPS, 2, 2, 0xffffffff);
+						graphics.drawString("FPS: " + lastFPS, 2, 2, Color.WHITE);
 					}
 					drawParticles();
 					graphics.render();
@@ -234,7 +235,7 @@ public abstract class Game implements Runnable {
 				draw(graphics);
 				drawParticles();
 				if (showFPS) {
-					graphics.drawString("FPS: " + lastFPS, 2, 2, 0xffffffff);
+					graphics.drawString("FPS: " + lastFPS, 2, 2, Color.WHITE);
 				}
 				graphics.render();
 				deltaframes--;
@@ -556,8 +557,8 @@ public abstract class Game implements Runnable {
 	}
 
 	private void drawLoadingScreen() {
-		graphics.fill(0xff000000);
-		graphics.drawString("Loading assets", width / 2 - 56, height / 2, 2);
+		graphics.fill(Color.BLACK);
+		graphics.drawString("Loading assets", width / 2 - 56, height / 2, Color.WHITE);
 		graphics.render();
 	}
 

@@ -11,9 +11,10 @@ import com.misty.utils.Vector2;
 
 public class Sprite extends GameObject {
 
-	protected float rotationDelta = 0f;
+	protected Bitmap bitmap;
+	
 	public Sprite(Bitmap bm, float x, float y) {
-		this.bm = bm;
+		this.bitmap = bm;
 		this.x = x;
 		this.y = y;
 		this.width = bm.getWidth();
@@ -41,7 +42,7 @@ public class Sprite extends GameObject {
 	}
 	
 	private void setupShape() {
-		Point[] pts = Util.makePoly(bm, 1, 10);
+		Point[] pts = Util.makePoly(bitmap, 1, 10);
 		int[] xs = new int[pts.length];
 		int[] ys = new int[pts.length];
 		for(int i = 0; i < pts.length; i++) {
@@ -58,7 +59,6 @@ public class Sprite extends GameObject {
 
 	@Override
 	public void update() {
-		rotation += rotationDelta;
 		if(rotation > Math.PI*2) rotation-=Math.PI*2;
 		if(rotation < -Math.PI*2) rotation+=Math.PI*2;
 		//rotationDelta*=.98f;
@@ -77,7 +77,7 @@ public class Sprite extends GameObject {
 		af.rotate(rotation, width/2, height/2);
 		return af.createTransformedShape(shape);
 	}
-	public void applyTorque(Vector2 pt, float dir, float i) {
+	/*public void applyTorque(Vector2 pt, float dir, float i) {
 		Vector2 v1 = new Vector2(Util.cos(dir), Util.sin(dir));
 		v1 = v1.mul(i/20000f);
 		int centerX = (int) (x+width/2);
@@ -90,6 +90,12 @@ public class Sprite extends GameObject {
 		rotationDelta+=totRot;
 		dx-=v1.x;
 		dy-=v1.y;
+	}*/
+
+	public Bitmap getBitmap() {
+		return bitmap;
 	}
+
+	
 
 }

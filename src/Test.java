@@ -1,8 +1,8 @@
-import java.awt.Color;
 import java.io.IOException;
 
 import com.misty.engine.Game;
 import com.misty.engine.graphics.Bitmap;
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.Group;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.Stage;
@@ -56,19 +56,19 @@ public class Test extends Game {
 		Slider redSlider = new Slider(0, 0, 100, 10);
 		redSlider.addSliderListener(e -> {
 			red = (int) (e*255f);
-			redSlider.setHighlightColor(new Color(e, 0, 0).getRGB());
+			redSlider.setHighlightColor(new Color(0xff, red, 0, 0));
 
 		});
 		Slider greenSlider = new Slider(0, 11, 100, 10);
 		greenSlider.addSliderListener(e -> {
 			green = (int) (e*255f);
-			greenSlider.setHighlightColor(new Color(0, e, 0).getRGB());
+			greenSlider.setHighlightColor(new Color(0xff, 0, green, 0));
 
 		});
 		Slider blueSlider = new Slider(0, 22, 100, 10);
 		blueSlider.addSliderListener(e -> {
 			blue = (int) (e*255f);
-			blueSlider.setHighlightColor(new Color(0, 0, e).getRGB());
+			blueSlider.setHighlightColor(new Color(0xff, 0, 0, blue));
 		});
 		
 		add(bb);
@@ -142,9 +142,9 @@ public class Test extends Game {
 		g.fillColoredRect(100, 200, 100, 100, getCol());
 	}
 
-	private int getCol() {
+	private Color getCol() {
 		//System.out.println(red + " " + green + " " + blue);
-		return new Color(red, green, blue, 0xff).getRGB();
+		return new Color(0xff, red, green, blue);
 	}
 
 

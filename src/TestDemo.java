@@ -8,6 +8,7 @@ import org.xml.sax.SAXException;
 
 import com.misty.engine.Game;
 import com.misty.engine.graphics.Animation;
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.ParticleEmitter;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.Sprite;
@@ -34,6 +35,7 @@ public class TestDemo extends Game {
 		super("TileMap Demo", width, height, scale);
 		setClearColor(0xff87CEEB);
 		setCursorImage("res/cursor.png");
+		setFPSLimit(false);
 		try {
 			//we create an animation with each frame being 32x32 pixels
 			ani = new Animation("res/playerAni.png", 32, 32);
@@ -84,7 +86,7 @@ public class TestDemo extends Game {
 		//two fonts currently, this is how you set them
 		g.setFont(Font.regularFont);
 
-		g.drawString(sample, 5, yOffset, 0xffffffff, 1f);
+		g.drawString(sample, 5, yOffset, Color.WHITE, 1f);
 		g.setFont(Font.defaultFont);
 
 	}

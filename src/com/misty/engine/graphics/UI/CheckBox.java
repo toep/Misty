@@ -3,6 +3,7 @@ package com.misty.engine.graphics.UI;
 import java.awt.Shape;
 import java.util.ArrayList;
 
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.UI.listeners.CheckListener;
@@ -73,10 +74,10 @@ public class CheckBox extends GameObject implements Clickable {
 
 	@Override
 	public void draw(Renderer r) {
-		r.fillColoredRect(x, y, width, height, 0xffaeaeae);
-		r.drawColoredRect(x, y, width, height, 0xff323232);
+		r.fillColoredRect(x, y, width, height, Color.create(0xffaeaeae));
+		r.drawColoredRect(x, y, width, height, Color.create(0xff323232));
 		if(hovered)
-			r.drawColoredRect(x, y, width-1, height-1, 0xff323232);
+			r.drawColoredRect(x, y, width-1, height-1, Color.create(0xff323232));
 
 		if(checked) {
 			r.drawString("x", x+2, y+2);

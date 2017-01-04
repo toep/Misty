@@ -1,9 +1,9 @@
 package com.misty.engine.graphics.UI;
 
-import java.awt.Color;
 import java.awt.Shape;
 import java.util.ArrayList;
 
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.UI.listeners.SliderListener;
@@ -16,7 +16,10 @@ public class Slider extends GameObject implements Clickable {
 	private boolean hovering = false;
 	private int knobWidth = 5;
 	private boolean highlighted = false;
-	private int highlightColor = 0xffaefeae;
+	private Color highlightColor = new Color(0xffaefeae);
+	private Color bgColor = new Color(0xffaeaeae);
+	private Color hoveringKnob = new Color(0xfff3f3f3);
+	private Color unhoveringKnob = new Color(0xffe3e3e3);
 	private ArrayList<SliderListener> listeners = new ArrayList<SliderListener>();
 
 	public Slider(int x, int y, int width, int height, float initialValue) {
@@ -35,7 +38,7 @@ public class Slider extends GameObject implements Clickable {
 		highlighted = highlight;
 	}
 	
-	public void setHighlightColor(int color) {
+	public void setHighlightColor(Color color) {
 		highlightColor = color;
 	}
 
@@ -47,6 +50,10 @@ public class Slider extends GameObject implements Clickable {
 	@Override
 	public boolean isPressed() {
 		return true;
+	}
+	
+	public float getValue() {
+		return value;
 	}
 
 	@Override
@@ -84,13 +91,13 @@ public class Slider extends GameObject implements Clickable {
 
 	@Override
 	public void draw(Renderer r) {
-		r.fillColoredRect(x, y, width, height, 0xffaeaeae);
-		int knobColor = hovering?0xfff3f3f3:0xffe3e3e3;
+		r.fillColoredRect(x, y, width, height, bgColor);
+		Color knobColor = hovering?hoveringKnob:unhoveringKnob;
 		r.fillColoredRect(x+value*(width-knobWidth-2)+1, y, knobWidth, height, knobColor);
 		if(highlighted) {
-			r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, knobColor&highlightColor);
+			r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, Color.create(knobColor.rgb&highlightColor.rgb));
 		}
-		r.drawColoredRect(x, y, width, height, Color.BLACK.getRGB());
+		r.drawColoredRect(x, y, width, height, Color.BLACK);
 
 	}
 

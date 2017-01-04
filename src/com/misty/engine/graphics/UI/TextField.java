@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 import com.misty.engine.Game;
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.UI.listeners.ReturnListener;
 import com.misty.listeners.Keys;
@@ -17,7 +18,9 @@ public class TextField extends Label implements Clickable, Typeable {
 	private boolean resizable = true;
 	private int maxSize = 14;
 	private int caret = 0;
+	protected Color backgroundColor = Color.LIME_LIGHT;
 	private ArrayList<ReturnListener> returnListeners = new ArrayList<ReturnListener>();
+	private Color borderColor = new Color(0xff222222);
 	public TextField(String string) {
 		this(string, 0, 0);
 	}
@@ -28,8 +31,13 @@ public class TextField extends Label implements Clickable, Typeable {
 		this.y = y;
 		this.height = 12;
 		caret = string.length();
-
+		withCharacterLength(maxSize);
 		time = System.currentTimeMillis();
+	}
+	
+	public TextField withCharacterLength(int len) {
+		setWidth(len*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth());
+		return this;
 	}
 
 	@Override
@@ -49,6 +57,7 @@ public class TextField extends Label implements Clickable, Typeable {
 		time = System.currentTimeMillis();
 		blink = true;
 		int localX = (int) (x-this.x);
+		System.out.println("fucyus");
 		caret = localX/Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
 		if(caret < 0) caret = 0;
 		if(caret > str.length()) caret = str.length();
@@ -94,8 +103,8 @@ public class TextField extends Label implements Clickable, Typeable {
 
 	@Override
 	public void draw(Renderer r) {
-		r.fillColoredRect(x, y, width, height, 0xff323232);
-		r.drawColoredRect(x, y, width, height, 0xff222222);
+		r.fillColoredRect(x, y, width, height, backgroundColor);
+		r.drawColoredRect(x, y, width, height, borderColor );
 
 		r.drawString(str, (int)x+2, (int)y+2, color);
 		if(focus && (blink || (str.length() >= maxSize))) {

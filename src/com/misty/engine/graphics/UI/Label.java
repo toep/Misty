@@ -3,13 +3,14 @@ package com.misty.engine.graphics.UI;
 import java.awt.Shape;
 
 import com.misty.engine.Game;
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Renderer;
 
 public class Label extends GameObject {
 
 	protected String str;
-	protected int color = 0xffffffff;
+	protected Color color = Color.WHITE;
 	
 	public Label(String str, int x, int y) {
 		this.str = str;
@@ -25,7 +26,7 @@ public class Label extends GameObject {
 	public String getText() {
 		return str;
 	}
-	public void setColor(int color) {
+	public void setColor(Color color) {
 		this.color = color;
 	}
 	public Label() {

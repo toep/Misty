@@ -9,7 +9,7 @@ import java.io.IOException;
 import com.misty.engine.Game;
 import com.misty.utils.Util;
 
-public class Animation extends GameObject {
+public class Animation extends Sprite {
 	
 	private Bitmap[] frames;
 	private int index;
@@ -17,9 +17,10 @@ public class Animation extends GameObject {
 	private long startTime;
 	private int startFrame = 0;
 	private int endFrame;
+	
 	public Animation(Bitmap[] src) {
+		super(src[0], 0, 0);//x=0,y=0
 		frames = src;
-		bm = frames[0];
 		index = 0;
 		endFrame = frames.length;
 		startTime = System.currentTimeMillis();
@@ -38,7 +39,7 @@ public class Animation extends GameObject {
 		height = h;
 	}
 	private void setupShape() {
-		Point[] pts = Util.makePoly(bm, 10, 20);
+		Point[] pts = Util.makePoly(bitmap, 10, 20);
 		int[] xs = new int[pts.length];
 		int[] ys = new int[pts.length];
 		for(int i = 0; i < pts.length; i++) {
@@ -72,13 +73,13 @@ public class Animation extends GameObject {
 	}
 	
 	public Bitmap currentFrame() {
-		return bm;
+		return bitmap;
 	}
 	
 	public void nextFrame() {
 		index++;
 		if(index >= endFrame) index = startFrame;
-		bm = frames[index];
+		bitmap = frames[index];
 	}
 
 	@Override

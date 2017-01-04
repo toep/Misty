@@ -3,6 +3,7 @@ package com.misty.engine.graphics.UI;
 import java.util.Iterator;
 
 import com.misty.engine.Game;
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Group;
 import com.misty.engine.graphics.Renderer;
@@ -12,7 +13,7 @@ public class Table extends Group implements Scrollable, Clickable {
 	
 	
 	private int nextY = 0;
-	private int backgroundColor = 0xff212121;
+	private Color backgroundColor = new Color(0xff212121);
 	public final static int ALLIGN_LEFT = 2;
 	public final static int ALLIGN_RIGHT = 3;
 	public final static int ALLIGN_CENTER = 4;
@@ -25,6 +26,8 @@ public class Table extends Group implements Scrollable, Clickable {
 	private boolean dragging = false;
 	private boolean hovering = false;
 	private final int sliderWidth = 10;
+	private Color fillColor = new Color(0xff212121);
+	private Color sliderBarColor = new Color(0xff434332);
 	public Table(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -80,7 +83,7 @@ public class Table extends Group implements Scrollable, Clickable {
 	@Override
 	public void draw(Renderer r) {
 		r.setClip((int)x, (int)y, width, height);
-		r.fillColoredRect(x, y, width, height, 0xff212121);
+		r.fillColoredRect(x, y, width, height, fillColor );
 		//System.out.println(children.get(0).getY());
 		Game.getCurrent().getRenderer().translate(x, y);
 		synchronized(this) {
@@ -94,10 +97,10 @@ public class Table extends Group implements Scrollable, Clickable {
 		r.resetClip();
 		if(nextY > height && nextY != 0) {
 		
-		r.fillColoredRect(x+width-sliderWidth, y, 10, height, 0xff434332);
+		r.fillColoredRect(x+width-sliderWidth, y, 10, height, sliderBarColor );
 			int yPos = Util.map(yScroll, 0, nextY-height, 0, height-10);
-			r.fillColoredRect(x+width-sliderWidth, y+yPos, 10, 10, 0xffffffff);
-			r.drawColoredRect(x+width-sliderWidth+1, y+yPos+1, 10-2, 10-2, 0xffe3e3e3);			
+			r.fillColoredRect(x+width-sliderWidth, y+yPos, 10, 10, Color.WHITE);
+			r.drawColoredRect(x+width-sliderWidth+1, y+yPos+1, 10-2, 10-2, Color.GRAY);			
 		}
 
 	}

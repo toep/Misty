@@ -21,9 +21,7 @@ public class Renderer extends JPanel {
 	private int width, height;
 	private int scale;
 	int tick = 0;
-	// private static String fontLegend =
-	// "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"#$%&'()*+,-./:;<=>?[\\]^_|@
-	// ";
+
 	private Graphics g;
 	public static final int RENDERING_MODE_NORMAL = 0;
 	public static final int RENDERING_MODE_MULTIPLY = 1;
@@ -38,7 +36,7 @@ public class Renderer extends JPanel {
 	private int clipy;
 	private int clipwidth;
 	private int clipheight;
-	
+
 	
 	public void setRenderingMode(int r) {
 		renderingMode = r;
@@ -121,7 +119,7 @@ public class Renderer extends JPanel {
 	 * @param yf y position
 	 */
 	public void drawString(String str, float x, float y) {
-		drawString(str, x, y, 0xffffffff, 1.0f);
+		drawString(str, x, y, Color.WHITE, 1.0f);
 	}
 
 	/**
@@ -132,7 +130,18 @@ public class Renderer extends JPanel {
 	 * @param color in 0xaarrggbb format
 	 * @param scale
 	 */
-	public void drawString(String str, float fx, float fy, int color, float scale) {
+	public void drawString(String str, float fx, float fy, Color color, float scale) {
+		drawString(str, fx, fy, color.rgb, scale);
+	}
+	/**
+	 * draws a string to pixel array in specified color and scale
+	 * @param str string being drawn
+	 * @param x pos
+	 * @param y pos
+	 * @param color in 0xaarrggbb format
+	 * @param scale
+	 */
+	private void drawString(String str, float fx, float fy, int color, float scale) {
 		int x = (int)fx;
 		int y = (int)fy;
 		int row = 0;
@@ -158,12 +167,20 @@ public class Renderer extends JPanel {
 		}
 	}
 
-	/*
+	/**
 	 * draws a string @str at position @x and @x in pixels*gameScale with the
 	 * color @0xaarrggbb
 	 */
-	public void drawString(String str, float x, float y, int color) {
+	private void drawString(String str, float x, float y, int color) {
 		drawString(str, x, y, color, 1f);
+	}
+	
+	/**
+	 * draws a string @str at position @x and @x in pixels*gameScale with the
+	 * color @0xaarrggbb
+	 */
+	public void drawString(String str, float x, float y, Color color) {
+		drawString(str, x, y, color.rgb, 1f);
 	}
 
 	private int mixPixel(int x, int y) {
@@ -333,8 +350,9 @@ public class Renderer extends JPanel {
 
 	// }
 
-	public void draw(GameObject go, int x, int y, float rad, float scale) {
-		Bitmap bm = go.bm;
+	public void draw(Sprite sprite, int x, int y, float rad, float scale) {
+		if(sprite == null) return;
+		Bitmap bm = sprite.getBitmap();
 		if (rad == 0) {
 			drawBitmap(bm, x, y, scale);
 			return;
@@ -351,8 +369,8 @@ public class Renderer extends JPanel {
 		float cos = Util.cos(rad);
 
 		float step = Math.max(Math.max(Math.abs(sin), Math.abs(cos)) - .2f, 0.7f);
-		float px = go != null ? go.rotationPivotX : .5f;
-		float py = go != null ? go.rotationPivotX : .5f;
+		float px = sprite.getRotationPivotX();
+		float py = sprite.getRotationPivotY();
 		float bmw2 = bm.getWidth() * scale * px;
 		float bmh2 = bm.getHeight() * scale * py;
 		float mx, mxx;
@@ -425,7 +443,11 @@ public class Renderer extends JPanel {
 		}
 	}
 
-	public void fillColoredRect(float xf, float yf, int width, int height, int color) {
+	public void fillColoredRect(float x, float y, int w, int h, Color c) {
+		fillColoredRect(x, y, w, h, c.rgb);
+	}
+	
+	private void fillColoredRect(float xf, float yf, int width, int height, int color) {
 		int x = (int) xf + xoffset;
 		int y = (int) yf + yoffset;
 		if (x + width < 0 || y + height < 0 || x > this.width)
@@ -455,8 +477,10 @@ public class Renderer extends JPanel {
 				return;
 		}
 	}
-
-	public void drawColoredRect(float xf, float yf, int width, int height, int color) {
+	public void drawColoredRect(float x, float y, int width, int height, Color c) {
+		drawColoredRect(x, y, width, height, c.rgb);
+	}
+	private void drawColoredRect(float xf, float yf, int width, int height, int color) {
 		int x = (int) xf + xoffset;
 		int y = (int) yf + yoffset;
 		if (x + width < 0 || y + height < 0 || x > this.width)
@@ -500,14 +524,17 @@ public class Renderer extends JPanel {
 		// 0x00) {
 		
 		if ((color & 0xff000000) != 0x00 && !(index >= pixels.length || index < 0)) {
+			
 			if (renderingMode == RENDERING_MODE_NORMAL) {
 				pixels[index] = color;
+
 			} else if (renderingMode == RENDERING_MODE_MULTIPLY) {
 				pixels[index] = mixPixel(pixels[index], color);
 			}
 
 		}
 	}
+
 
 	public void clear() {
 		System.arraycopy(clearPixels, 0, pixels, 0, pixels.length);
@@ -525,8 +552,8 @@ public class Renderer extends JPanel {
 		pixels[(int) p.getX() + (int) p.getY() * width] = p.getColor();
 	}
 
-	public void fill(int i) {
-		Util.intfill(pixels, i);
+	public void fill(Color c) {
+		Util.intfill(pixels, c.rgb);
 	}
 
 	public void setClearColor(int color) {
@@ -544,5 +571,9 @@ public class Renderer extends JPanel {
 		clipwidth = width;
 		clipheight = height;
 	}
+
+	
+
+	
 
 }

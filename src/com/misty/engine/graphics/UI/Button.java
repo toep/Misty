@@ -5,6 +5,7 @@ import java.awt.Shape;
 import java.util.ArrayList;
 
 import com.misty.engine.Game;
+import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Renderer;
 import com.misty.engine.graphics.UI.listeners.ButtonListener;
@@ -13,10 +14,10 @@ public class Button extends GameObject implements Clickable{
 
 	private String title;
 	private boolean clickDown = false;
-	private int color = 0xffaeaeae;
-	private int normalColor = 0xffaeaeae;
-	private int pressedColor = 0xffeeeeee;
-	private int borderColor = 0xff333333;
+	private Color color = new Color(0xffaeaeae);
+	private Color normalColor = new Color(0xffaeaeae);
+	private Color pressedColor = new Color(0xffeeeeee);
+	private Color borderColor = new Color(0xff333333);
 	private boolean drawBorder = true;
 	private boolean mouseOnButton = false;
 
@@ -52,7 +53,7 @@ public class Button extends GameObject implements Clickable{
 		this.height = h;
 	}
 
-	public void setBorderColor(int col) {
+	public void setBorderColor(Color col) {
 		borderColor = col;
 	}
 	
@@ -64,10 +65,10 @@ public class Button extends GameObject implements Clickable{
 		width = 10+str.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
 	}
 	
-	public void setPressedColor(int col) {
+	public void setPressedColor(Color col) {
 		pressedColor = col;
 	}
-	public void setColor(int col) {
+	public void setColor(Color col) {
 		normalColor = col;
 		color = normalColor;
 	}
@@ -91,15 +92,15 @@ public class Button extends GameObject implements Clickable{
 	public void draw(Renderer r) {
 		r.fillColoredRect(x, y, width, height, color);
 		if(!enabled) {
-			r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, titleColor&0xff888888);
+			r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.create(titleColor&0xff888888));
 		}else
-		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, titleColor);
+		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.create(titleColor));
 		
 		if(drawBorder) {
 			if(enabled) {
 			r.drawColoredRect(x, y, width, height, borderColor);
 			}else {
-				r.drawColoredRect(x, y, width, height, borderColor^0xff000000);
+				r.drawColoredRect(x, y, width, height, Color.create(borderColor.rgb^0xff000000));
 			}
 		}
 		if(mouseOnButton) {
