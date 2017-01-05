@@ -61,11 +61,8 @@ public class Sprite extends GameObject {
 	public void update() {
 		if(rotation > Math.PI*2) rotation-=Math.PI*2;
 		if(rotation < -Math.PI*2) rotation+=Math.PI*2;
-		//rotationDelta*=.98f;
 		x+=dx;
 		y+=dy;
-		//dx*=.98f;
-		//dy*=.98f;
 	}
 	
 	

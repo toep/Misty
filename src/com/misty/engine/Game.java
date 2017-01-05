@@ -63,6 +63,16 @@ public abstract class Game implements Runnable {
 	/** used for other game components to get a copy of the current game */
 	private static Game currentGame;
 
+	//used for offsetting mouse position, for some reason mac offsets by a few pixels.. this is a simple workaround
+	private int mouseXOffset = 0;
+	private int mouseYOffset = 0;
+
+	private double deltaupdate = 0;
+	private double deltaframes = 0;
+	private int frames = 0;
+	private int updates = 0;
+	
+	private long timer;
 	/**
 	 * used to run code in the update method on main thread if received from
 	 * network/eventlisteners
@@ -76,6 +86,11 @@ public abstract class Game implements Runnable {
 		this.height = height;
 		this.scale = scale;
 
+		String os = System.getProperty("os.name");
+		if(os.toLowerCase().contains("mac")) {
+			mouseXOffset = -1;
+			mouseYOffset = -3;
+		}
 		graphics = new Renderer(width, height, scale);
 		frame = new Frame();
 
@@ -85,7 +100,7 @@ public abstract class Game implements Runnable {
 		graphics.addMouseListener(listener);
 		graphics.addMouseMotionListener(listener);
 		graphics.addMouseWheelListener(listener);
-
+		
 		frame.add(graphics);
 		frame.pack();
 		frame.setTitle(name);
@@ -95,7 +110,7 @@ public abstract class Game implements Runnable {
 		}
 		gameStage = new Stage();
 		currentStage = gameStage;
-
+		
 		setup();
 	}
 
@@ -179,78 +194,74 @@ public abstract class Game implements Runnable {
 			img = Util.getBufferedImageFromFile(name);
 			graphics.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(img, new Point(0, 0), name));
 		} catch (IOException e) {
-
-			e.printStackTrace();
+			System.err.println("Unable to load cursor image " + name + ". Make sure it's in the correct folder!");
 		}
 	}
 
 	public void run() {
 		long lastTime = System.nanoTime();
-		long timer = System.currentTimeMillis();
+		timer = System.currentTimeMillis();
 		final double nsUpdate = 1000000000.0 / updaterate;
 		final double nsFrames = 1000000000.0 / framerate;
-
-		double deltaupdate = 0;
-		double deltaframes = 0;
-		int frames = 0;
-
-		int updates = 0;
-
+		long now;
 		// graphics.clear();
 		while (running) {
-			long now = System.nanoTime();
+			now = System.nanoTime();
 			deltaupdate += (now - lastTime) / nsUpdate;
 			deltaframes += (now - lastTime) / nsFrames;
 			lastTime = now;
+			
 			if (deltaupdate > 2)
 				deltaupdate = 2;
 			while (deltaupdate >= 1) {
-				update();
-				updateActions();
-				updateParticles();
-				updateGameObjects();
-				deltaupdate--;
-				updates++;
+				doUpdate();
 			}
 			if (fpsLimit)
 				while (deltaframes >= 1) {
-					if (shouldClear)
-						graphics.clear();
-					graphics.setRenderingMode(Renderer.RENDERING_MODE_NORMAL);
-					drawGameObjects();
-					draw(graphics);
-					if (showFPS) {
-						graphics.drawString("FPS: " + lastFPS, 2, 2, Color.WHITE);
-					}
-					drawParticles();
-					graphics.render();
-					deltaframes--;
-					frames++;
+					doRender();
 				}
 			else {
-				if (shouldClear)
-					graphics.clear();
-				graphics.setRenderingMode(Renderer.RENDERING_MODE_NORMAL);
-				drawGameObjects();
-				draw(graphics);
-				drawParticles();
-				if (showFPS) {
-					graphics.drawString("FPS: " + lastFPS, 2, 2, Color.WHITE);
-				}
-				graphics.render();
-				deltaframes--;
-				frames++;
+				doRender();
 			}
 
 			if (System.currentTimeMillis() - timer >= 1000) {
-				lastFPS = frames;
-				frame.setTitle(name + " | " + ("FPS: " + frames + ", UPS: " + updates));
-				frames = 0;
-				updates = 0;
-				timer = System.currentTimeMillis();
+				resetFPSValues();
 			}
 
 		}
+	}
+
+	private void resetFPSValues() {
+		lastFPS = frames;
+		//frame.setTitle(name + " | " + ("FPS: " + frames + ", UPS: " + updates));
+		frames = 0;
+		updates = 0;
+		timer = System.currentTimeMillis();
+	}
+
+	private void doUpdate() {
+		update();
+		updateActions();
+		updateParticles();
+		updateGameObjects();
+		deltaupdate--;
+		updates++;
+		tick += .01f;
+	}
+
+	private void doRender() {
+		if (shouldClear)
+			graphics.clear();
+		graphics.setRenderingMode(Renderer.RENDERING_MODE_NORMAL);
+		drawGameObjects();
+		draw(graphics);
+		if (showFPS) {
+			graphics.drawString("FPS: " + lastFPS, 2, 2, Color.WHITE);
+		}
+		drawParticles();
+		graphics.render();
+		deltaframes--;
+		frames++;
 	}
 
 	/**
@@ -311,18 +322,15 @@ public abstract class Game implements Runnable {
 	public void updateActions() {
 		Runnable r;
 		while (!actionQueue.isEmpty()) {
-
 			r = actionQueue.poll();
 			r.run();
-
 		}
-		tick += .01f;
 	}
 
 	public void mousePressed(MouseEvent e) {
-		int mouseX = (e.getX()) / scale;
-		int mouseY = (e.getY()) / scale;
-
+		int mouseX = (e.getX()+mouseXOffset) / scale;
+		int mouseY = (e.getY()+mouseYOffset) / scale;
+		
 		mousePressed(mouseX, mouseY);
 
 		mouseX -= currentStage.getX();
@@ -353,8 +361,8 @@ public abstract class Game implements Runnable {
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		int mouseX = (e.getX()) / scale;
-		int mouseY = (e.getY()) / scale;
+		int mouseX = (e.getX()+mouseXOffset) / scale;
+		int mouseY = (e.getY()+mouseYOffset) / scale;
 		mouseReleased(mouseX, mouseY);
 
 		mouseX -= currentStage.getX();
@@ -443,8 +451,8 @@ public abstract class Game implements Runnable {
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		int mouseX = (e.getX()) / scale;
-		int mouseY = (e.getY()) / scale;
+		int mouseX = (e.getX()+mouseXOffset) / scale;
+		int mouseY = (e.getY()+mouseYOffset) / scale;
 
 		mouseX -= currentStage.getX();
 		mouseY -= currentStage.getY();
@@ -473,8 +481,8 @@ public abstract class Game implements Runnable {
 	}
 
 	public void mouseMoved(MouseEvent e) {
-		mouseX = (e.getX()) / scale;
-		mouseY = (e.getY()) / scale;
+		mouseX = (e.getX()+mouseXOffset) / scale;
+		mouseY = (e.getY()+mouseYOffset) / scale;
 		
 		mouseMoved(mouseX, mouseY);
 

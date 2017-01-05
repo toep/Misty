@@ -24,7 +24,9 @@ public class Test extends Game {
 	Label testLabel;
 	Table table;
 	private int red, green, blue;
-	
+	private int bx, by;
+	int val = 0;
+
 	public Test(String name, int width, int height, int scale) {
 		super(name, width, height, scale);
 		setClearColor(0xff43fbde);
@@ -93,6 +95,7 @@ public class Test extends Game {
 		menuGo.setPosition(100, 180);
 		add(menuGo);
 		menuGo.addButtonListener(() -> {
+			menuGo.setText("clicked " + ++val);
 			//setStage(menu);
 		});
 		
@@ -108,10 +111,16 @@ public class Test extends Game {
 		table.add(new Button("row2"));
 		table.add(new Button("row3"));
 		table.add(new LabelNTextField("sdf: ", new TextField("Hallo")));
-		for(int i = 0; i < 200; i++) table.add(new Button("row " + (i+4)));
+		for(int i = 0; i < 200; i++) {
+			Button b = new Button("row " + (i+4));
+			int ind = i;
+			b.addButtonListener(() -> menuGo.setText(ind + " is clicked"));
+			table.add(b);
+		}
 		//setStage(menu);
 		
 	}
+
 
 	class CBWL extends Group {
 		public CBWL(String str) {
@@ -129,17 +138,23 @@ public class Test extends Game {
 	}
 	
 
-	
+	@Override
+	public void mouseMoved(int mouseX, int mouseY) {
+		// TODO Auto-generated method stub
+		super.mouseMoved(mouseX, mouseY);
+		//bx = mouseX;
+		//by = mouseY;
+	}
 
 
 
 	public static void main(String[] args) {
-		new Test("FPS Test", 400, 450, 2).start();
+		new Test("FPS Test", 400, 450, 1).start();
 	}
 
 	@Override
 	public void draw(Renderer g) {
-		g.fillColoredRect(100, 200, 100, 100, getCol());
+		g.fillColoredRect(bx, by, 100, 100, getCol());
 	}
 
 	private Color getCol() {
