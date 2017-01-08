@@ -34,6 +34,8 @@ public class Slider extends GameObject implements Clickable {
 		this(x, y, width, height, 0.0f);
 	}
 	
+	
+	
 	public void setHighlighted(boolean highlight) {
 		highlighted = highlight;
 	}
@@ -95,7 +97,7 @@ public class Slider extends GameObject implements Clickable {
 		Color knobColor = hovering?hoveringKnob:unhoveringKnob;
 		r.fillColoredRect(x+value*(width-knobWidth-2)+1, y, knobWidth, height, knobColor);
 		if(highlighted) {
-			r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, Color.create(knobColor.rgb&highlightColor.rgb));
+			r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, Color.temp(knobColor.rgb&highlightColor.rgb));
 		}
 		r.drawColoredRect(x, y, width, height, Color.BLACK);
 

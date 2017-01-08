@@ -23,7 +23,7 @@ public class TopBar extends Group {
 	
 	@Override
 	public void draw(Renderer r) {
-		r.fillColoredRect(x, y, width, height, Color.create(0xffaaaaaa));
+		r.fillColoredRect(x, y, width, height, Color.temp(0xffaaaaaa));
 		super.draw(r);
 	}
 	

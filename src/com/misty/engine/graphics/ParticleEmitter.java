@@ -22,8 +22,8 @@ public class ParticleEmitter extends GameObject {
 
 	@Override
 	public void update() {
-		Particle.setDirection((float) Game.getCurrent().tick*5);
-		Game.getCurrent().addParticle(new Particle(x, y, Particle.MOTION_RANDOM_RETURNING, 1, 50, 0xff000000));
+		Particle.setDirection((float) Game.getCurrent().getTick()*5);
+		Game.getCurrent().addParticle(new Particle(x, y, Particle.MOTION_RANDOM_RETURNING, 1, 50, Color.BLACK)); //TODO change black to a variable
 	}
 
 }

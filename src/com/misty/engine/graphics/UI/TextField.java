@@ -18,7 +18,7 @@ public class TextField extends Label implements Clickable, Typeable {
 	private boolean resizable = true;
 	private int maxSize = 14;
 	private int caret = 0;
-	protected Color backgroundColor = Color.LIME_LIGHT;
+	protected Color backgroundColor = Color.CYAN_DARK;
 	private ArrayList<ReturnListener> returnListeners = new ArrayList<ReturnListener>();
 	private Color borderColor = new Color(0xff222222);
 	public TextField(String string) {
@@ -57,7 +57,6 @@ public class TextField extends Label implements Clickable, Typeable {
 		time = System.currentTimeMillis();
 		blink = true;
 		int localX = (int) (x-this.x);
-		System.out.println("fucyus");
 		caret = localX/Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
 		if(caret < 0) caret = 0;
 		if(caret > str.length()) caret = str.length();

@@ -28,6 +28,8 @@ public class Table extends Group implements Scrollable, Clickable {
 	private final int sliderWidth = 10;
 	private Color fillColor = new Color(0xff212121);
 	private Color sliderBarColor = new Color(0xff434332);
+	
+	private float scrollIntensity = 4f;
 	public Table(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -38,6 +40,14 @@ public class Table extends Group implements Scrollable, Clickable {
 	
 	public void setFill(int fill) {
 		this.fill = fill;
+	}
+	
+	/**
+	 * this decides how fast you can scroll through the table. default value is 4. Higher is faster, negative reverses the scrolling order, 0 means no scroll
+	 * @param intensity
+	 */
+	public void setScrollIntensity(float intensity) {
+		this.scrollIntensity = intensity;
 	}
 	
 	@Override
@@ -106,6 +116,7 @@ public class Table extends Group implements Scrollable, Clickable {
 	}
 	@Override
 	public void onScroll(int ty) {
+		ty*=scrollIntensity;
 		if(!hovering) return;
 		
 		synchronized(this) {

@@ -297,7 +297,7 @@ public class Renderer extends JPanel {
 		}
 		x+=xoffset;
 		y+=yoffset;
-		if (x == 0 && y == 0 && bm.getWidth() == Game.getCurrent().width && bm.getHeight() == Game.getCurrent().height) {
+		if (x == 0 && y == 0 && bm.getWidth() == Game.getCurrent().getWidth() && bm.getHeight() == Game.getCurrent().getHeight()) {
 			System.arraycopy(bm.pixels, 0, pixels, 0, pixels.length);
 		} else
 			for (int line = 0; line < bm.getHeight(); line++) {
@@ -447,6 +447,47 @@ public class Renderer extends JPanel {
 		fillColoredRect(x, y, w, h, c.rgb);
 	}
 	
+	public void fillColoredOval(float x, float y, int w, int h, Color c) {
+		fillColoredOval(x, y, w, h, c.rgb);
+	}
+	
+	private void fillColoredOval(float x, float y, int w, int h, int c) {
+		//fillColoredRect(x, y, w, h, c|0xffaeaeae);
+		int h2 = h/2;
+		int w2 = w/2;
+		float fh2 = h/2f;
+		float fw2 = w/2f;
+		for(int i = 0; i <= h2; i++) {
+			float p = i/fh2;
+			//System.out.println(p);
+			float specialVal = (float) Math.sqrt(1.0-p*p);
+			//float specialVal = (float) (1/(Math.sqrt((i*i)/(1))+1));
+			//System.out.println(p + " " + specialVal);
+			int xpos = (int)(x+w-fw2*(specialVal));
+			int xpos2 = (int)(w-xpos+2f*x-1);
+			//System.out.println(xpos + " " + xpos2);
+			//if(xpos2 > xpos)
+			int end = (int)(xpos2+w2);
+			if(end >= width) end = width-1;
+			int start = (int) (xpos-w2);
+			if(start < 0) start = 0;
+			int lower = (int)(y+i+h2);
+			int upper = (int)(h+y-i-h2-1);
+			if(upper >= 0  && upper < height)
+			for(int xx = start; xx <= end; xx++) {
+				drawPixel(xx, upper, c);
+			}
+			if(lower >= 0 && lower < height)
+			for(int xx = start; xx <= end; xx++) {
+				drawPixel(xx, lower, c);
+			}
+
+			//drawPixel(xpos-w2, (int)(yi+i+h2-1), c);
+			//drawPixel(xpos2+w2, (int)(yi+i+h2-1), c);
+		}
+		
+	}
+
 	private void fillColoredRect(float xf, float yf, int width, int height, int color) {
 		int x = (int) xf + xoffset;
 		int y = (int) yf + yoffset;
@@ -518,8 +559,16 @@ public class Renderer extends JPanel {
 				putPixel(startPos + i * this.width, color);
 			}
 	}
+	
+	public void drawPixel(int x, int y, Color color) {
+		drawPixel(x, y, color.rgb);
+	}
+	
+	private void drawPixel(int x, int y, int color) {
+		putPixel(x+y*width, color);
+	}
 
-	public void putPixel(int index, int color) {
+	private void putPixel(int index, int color) {
 		// if (index < pixels.length && index >= 0 && (color & 0xff000000) !=
 		// 0x00) {
 		
@@ -549,15 +598,15 @@ public class Renderer extends JPanel {
 	public void drawParticle(Particle p) {
 		if (p.getX() < 0 || p.getY() < 0 || p.getX() >= width || p.getY() >= height)
 			return;
-		pixels[(int) p.getX() + (int) p.getY() * width] = p.getColor();
+		pixels[(int) p.getX() + (int) p.getY() * width] = p.getColor().rgb;
 	}
 
 	public void fill(Color c) {
 		Util.intfill(pixels, c.rgb);
 	}
 
-	public void setClearColor(int color) {
-		Arrays.fill(clearPixels, color);
+	public void setClearColor(Color color) {
+		Arrays.fill(clearPixels, color.rgb);
 	}
 
 	public void translate(float x, float y) {

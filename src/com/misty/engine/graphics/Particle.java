@@ -1,5 +1,7 @@
 package com.misty.engine.graphics;
 
+import java.util.Random;
+
 import com.misty.utils.Util;
 
 public class Particle {
@@ -13,14 +15,17 @@ public class Particle {
 	private float dx, dy, ddx = 0, ddy = 0;
 	private int duration;
 	private static float direction;
-	private int color;
-	
-	public Particle(float x, float y, int motionType, float speed, int duration, int color) {
+	private Color color;
+	private static final Random rand = new Random();
+
+	public Particle(float x, float y, int motionType, float speed, int duration, Color color) {
 		this.x = x;
 		this.y = y;
 		float randomRad = motionType == MOTION_DIRECTIONAL? direction : (float) (Math.random()*Math.PI*2f);
-		this.dx = (float) (Math.random()*Util.sin(randomRad)*speed);
-		this.dy = (float) (Math.random()*Util.cos(randomRad)*speed);
+		float randSpeed = rand.nextFloat();
+		this.dx = (float) (Util.sin(randomRad)*speed*randSpeed);
+		this.dy = (float) (Util.cos(randomRad)*speed*randSpeed);
+
 		if(motionType == MOTION_RANDOM1) {
 		
 		}
@@ -60,7 +65,7 @@ public class Particle {
 		return (int)y;
 	}
 
-	public int getColor() {
+	public Color getColor() {
 		return color;
 	}
 

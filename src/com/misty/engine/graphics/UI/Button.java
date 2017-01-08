@@ -92,15 +92,15 @@ public class Button extends GameObject implements Clickable{
 	public void draw(Renderer r) {
 		r.fillColoredRect(x, y, width, height, color);
 		if(!enabled) {
-			r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.create(titleColor&0xff888888));
+			r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.temp(titleColor&0xff888888));
 		}else
-		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.create(titleColor));
+		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.temp(titleColor));
 		
 		if(drawBorder) {
 			if(enabled) {
 			r.drawColoredRect(x, y, width, height, borderColor);
 			}else {
-				r.drawColoredRect(x, y, width, height, Color.create(borderColor.rgb^0xff000000));
+				r.drawColoredRect(x, y, width, height, Color.temp(borderColor.rgb^0xff000000));
 			}
 		}
 		if(mouseOnButton) {

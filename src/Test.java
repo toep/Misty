@@ -5,13 +5,13 @@ import com.misty.engine.graphics.Bitmap;
 import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.Group;
 import com.misty.engine.graphics.Renderer;
-import com.misty.engine.graphics.Stage;
 import com.misty.engine.graphics.UI.Button;
 import com.misty.engine.graphics.UI.CheckBox;
 import com.misty.engine.graphics.UI.Label;
 import com.misty.engine.graphics.UI.Slider;
 import com.misty.engine.graphics.UI.Table;
 import com.misty.engine.graphics.UI.TextField;
+import com.misty.engine.graphics.UI.builders.SliderBuilder;
 import com.misty.engine.graphics.font.Font;
 
 
@@ -29,7 +29,7 @@ public class Test extends Game {
 
 	public Test(String name, int width, int height, int scale) {
 		super(name, width, height, scale);
-		setClearColor(0xff43fbde);
+		setClearColor(new Color(0xff43fbde));
 		setCursorImage("res/Gold_Cursor.png");
 		setFont(Font.bold);
 		try {
@@ -55,7 +55,7 @@ public class Test extends Game {
 		cb.addCheckListener(checked -> {
 			testLabel.setText("The checkbox is now " + (checked ? "on" : "off"));
 		});
-		Slider redSlider = new Slider(0, 0, 100, 10);
+		Slider redSlider = new SliderBuilder().setDimensions(100, 10).setPosition(0, 0).setHighlightColor(Color.RED).create();
 		redSlider.addSliderListener(e -> {
 			red = (int) (e*255f);
 			redSlider.setHighlightColor(new Color(0xff, red, 0, 0));

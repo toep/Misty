@@ -33,7 +33,7 @@ public class TestDemo extends Game {
 	
 	public TestDemo(int width, int height, int scale) {
 		super("TileMap Demo", width, height, scale);
-		setClearColor(0xff87CEEB);
+		setClearColor(new Color(0xff87CEEB));
 		setCursorImage("res/cursor.png");
 		setFPSLimit(false);
 		try {
@@ -43,7 +43,7 @@ public class TestDemo extends Game {
 			background = new Sprite("res/background.png", 0, 0);
 			//this creates a tilemap that can be drawn just by adding it as addObject(testMap)
 			testMap = TMXParser.createTileMap("res/polimap.tmx");
-		} catch (IOException | ParserConfigurationException | SAXException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(0);
 		}
@@ -98,32 +98,25 @@ public class TestDemo extends Game {
 		if(isKeyDown(Keys.LEFT)) testMap.move(4, 0);
 		if(isKeyDown(Keys.UP)) testMap.move(0, 4);
 		if(isKeyDown(Keys.DOWN)) testMap.move(0, -4);
+		ani.setPosition(mouseX, mouseY);
+		emitter.setPosition(mouseX, mouseY);
 	}
 	
 	public void keyPressed(int key) {
-		System.out.println("fsd");
 		if(key == Keys.ESC) {
 			setStage(mainMenu);
 		}
 	}
 	
 	@Override
-	public void mouseWheelMoved(MouseWheelEvent e) {
-		yOffset -= e.getWheelRotation()*5;
+	public void onScroll(int wheelRotation) {
+		yOffset -= wheelRotation*5;
 		ani.setScale(3f);
 		ani.setRotation(yOffset/50f);
 	}
 	
 	
 	
-	
-	public void mouseMoved(int x, int y) {
-		//this is how I get the animation to follow the mouse
-		ani.setPosition(x, y);
-		emitter.setPosition(x, y);
-		
-		
-	}
 
 
 
