@@ -13,10 +13,9 @@ public class Label extends GameObject {
 	protected Color color = Color.WHITE;
 	
 	public Label(String str, int x, int y) {
-		this.str = str;
 		this.x = x;
 		this.y = y;
-		this.width = str.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth();
+		setText(str);
 		this.height = Game.getCurrent().getRenderer().getCurrentFont().getCharacterHeight()+2;
 	}
 	public void setText(String str) {

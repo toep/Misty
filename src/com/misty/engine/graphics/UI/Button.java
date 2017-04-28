@@ -22,8 +22,10 @@ public class Button extends GameObject implements Clickable{
 	private boolean mouseOnButton = false;
 
 	ArrayList<ButtonListener> listeners;
-	private int titleColor = 0xffffffff;
 	
+	private int disabledMask = 0xff888888;
+	private Color titleColor = new Color(0xffffffff);
+	private Color titleColorDisabled = new Color(titleColor.rgb&disabledMask);
 	public Button() {
 		title = "";
 		width = 20;
@@ -92,15 +94,15 @@ public class Button extends GameObject implements Clickable{
 	public void draw(Renderer r) {
 		r.fillColoredRect(x, y, width, height, color);
 		if(!enabled) {
-			r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.temp(titleColor&0xff888888));
+			r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, titleColorDisabled);
 		}else
-		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, Color.temp(titleColor));
+		r.drawString(title, x+width/2-title.length()*Game.getCurrent().getRenderer().getCurrentFont().getCharacterWidth()/2, y+height/2-4, titleColor);
 		
 		if(drawBorder) {
 			if(enabled) {
 			r.drawColoredRect(x, y, width, height, borderColor);
 			}else {
-				r.drawColoredRect(x, y, width, height, Color.temp(borderColor.rgb^0xff000000));
+				//r.drawColoredRect(x, y, width, height, Color.temp(borderColor.rgb^0xff000000));
 			}
 		}
 		if(mouseOnButton) {
@@ -165,8 +167,9 @@ public class Button extends GameObject implements Clickable{
 	public void onClickOutside() {
 	}
 
-	public void setTitleColor(int color) {
+	public void setTitleColor(Color color) {
 		titleColor  = color;
+		titleColorDisabled = new Color(color.rgb&disabledMask);
 	}
 	
 	@Override

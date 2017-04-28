@@ -10,17 +10,17 @@ import com.misty.engine.graphics.UI.listeners.SliderListener;
 
 public class Slider extends GameObject implements Clickable {
 
-	/**this goes between 0 and 1 */
-	private float value;
-	private boolean dragging = false;
-	private boolean hovering = false;
-	private int knobWidth = 5;
-	private boolean highlighted = false;
-	private Color highlightColor = new Color(0xffaefeae);
-	private Color bgColor = new Color(0xffaeaeae);
-	private Color hoveringKnob = new Color(0xfff3f3f3);
-	private Color unhoveringKnob = new Color(0xffe3e3e3);
-	private ArrayList<SliderListener> listeners = new ArrayList<SliderListener>();
+	protected float value;
+	protected boolean dragging = false;
+	protected boolean hovering = false;
+	protected int knobWidth = 5;
+	protected boolean highlighted = false;
+	protected Color highlightColor = new Color(0xffaefeae);
+	protected Color highlightColorHover = highlightColor.lighten();
+	protected Color bgColor = new Color(0xffaeaeae);
+	protected Color hoveringKnob = new Color(0xfff3f3f3);
+	protected Color unhoveringKnob = new Color(0xffe3e3e3);
+	protected ArrayList<SliderListener> listeners;
 
 	public Slider(int x, int y, int width, int height, float initialValue) {
 		this.x = x;
@@ -28,6 +28,7 @@ public class Slider extends GameObject implements Clickable {
 		this.width = width;
 		this.height = height;
 		this.value = initialValue;
+		 listeners = new ArrayList<SliderListener>();
 	}
 	
 	public Slider(int x, int y, int width, int height) {
@@ -42,6 +43,8 @@ public class Slider extends GameObject implements Clickable {
 	
 	public void setHighlightColor(Color color) {
 		highlightColor = color;
+		highlightColorHover = color.lighten();
+		highlighted = true;
 	}
 
 	@Override
@@ -51,9 +54,13 @@ public class Slider extends GameObject implements Clickable {
 
 	@Override
 	public boolean isPressed() {
-		return true;
+		return dragging;
 	}
 	
+	/**
+	 * 
+	 * @return value between 0.0 and 1.0
+	 */
 	public float getValue() {
 		return value;
 	}
@@ -97,7 +104,11 @@ public class Slider extends GameObject implements Clickable {
 		Color knobColor = hovering?hoveringKnob:unhoveringKnob;
 		r.fillColoredRect(x+value*(width-knobWidth-2)+1, y, knobWidth, height, knobColor);
 		if(highlighted) {
-			r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, Color.temp(knobColor.rgb&highlightColor.rgb));
+			if(isMouseOver())
+				r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, highlightColorHover);
+			else
+				r.fillColoredRect(x, y, (int)(value*(width-knobWidth-2))+1, height, highlightColor);
+				
 		}
 		r.drawColoredRect(x, y, width, height, Color.BLACK);
 

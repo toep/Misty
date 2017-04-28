@@ -15,6 +15,11 @@ public class CheckBox extends GameObject implements Clickable {
 	private boolean hovered = false;
 
 	private ArrayList<CheckListener> listeners = new ArrayList<CheckListener>();
+	private Color backgroundColor = new Color(0xffaeaeae);
+	private Color borderColor = new Color(0xff323232);
+	private Color hoverColor = new Color(0xff323232);
+	private Color checkColor = Color.WHITE;
+
 	public CheckBox(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -26,6 +31,10 @@ public class CheckBox extends GameObject implements Clickable {
 		this(0, 0);
 	}
 
+	public void setCheckColor(Color color) {
+		checkColor = color;
+	}
+	
 	public boolean isChecked() {
 		return checked;
 	}
@@ -74,13 +83,13 @@ public class CheckBox extends GameObject implements Clickable {
 
 	@Override
 	public void draw(Renderer r) {
-		r.fillColoredRect(x, y, width, height, Color.temp(0xffaeaeae));
-		r.drawColoredRect(x, y, width, height, Color.temp(0xff323232));
+		r.fillColoredRect(x, y, width, height, backgroundColor );
+		r.drawColoredRect(x, y, width, height, borderColor);
 		if(hovered)
-			r.drawColoredRect(x, y, width-1, height-1, Color.temp(0xff323232));
+			r.drawColoredRect(x, y, width-1, height-1, hoverColor);
 
 		if(checked) {
-			r.drawString("x", x+2, y+2);
+			r.drawString("x", x+2, y+2, checkColor);
 		}
 	}
 

@@ -37,6 +37,7 @@ public class Renderer extends JPanel {
 	private int clipwidth;
 	private int clipheight;
 
+	private ShapeRenderer shapeRenderer;
 	
 	public void setRenderingMode(int r) {
 		renderingMode = r;
@@ -79,6 +80,8 @@ public class Renderer extends JPanel {
 		font = Font.defaultFont;
 		clearPixels = new int[pixels.length];
 		Arrays.fill(clearPixels, clearColor);
+		
+		shapeRenderer = new ShapeRenderer(this);
 	}
 	/**
 	 * sets up the renderer with specified dimensions with scale at 1
@@ -448,45 +451,16 @@ public class Renderer extends JPanel {
 	}
 	
 	public void fillColoredOval(float x, float y, int w, int h, Color c) {
-		fillColoredOval(x, y, w, h, c.rgb);
+		shapeRenderer.fillColoredOval(x, y, w, h, c.rgb);
 	}
 	
-	private void fillColoredOval(float x, float y, int w, int h, int c) {
-		//fillColoredRect(x, y, w, h, c|0xffaeaeae);
-		int h2 = h/2;
-		int w2 = w/2;
-		float fh2 = h/2f;
-		float fw2 = w/2f;
-		for(int i = 0; i <= h2; i++) {
-			float p = i/fh2;
-			//System.out.println(p);
-			float specialVal = (float) Math.sqrt(1.0-p*p);
-			//float specialVal = (float) (1/(Math.sqrt((i*i)/(1))+1));
-			//System.out.println(p + " " + specialVal);
-			int xpos = (int)(x+w-fw2*(specialVal));
-			int xpos2 = (int)(w-xpos+2f*x-1);
-			//System.out.println(xpos + " " + xpos2);
-			//if(xpos2 > xpos)
-			int end = (int)(xpos2+w2);
-			if(end >= width) end = width-1;
-			int start = (int) (xpos-w2);
-			if(start < 0) start = 0;
-			int lower = (int)(y+i+h2);
-			int upper = (int)(h+y-i-h2-1);
-			if(upper >= 0  && upper < height)
-			for(int xx = start; xx <= end; xx++) {
-				drawPixel(xx, upper, c);
-			}
-			if(lower >= 0 && lower < height)
-			for(int xx = start; xx <= end; xx++) {
-				drawPixel(xx, lower, c);
-			}
-
-			//drawPixel(xpos-w2, (int)(yi+i+h2-1), c);
-			//drawPixel(xpos2+w2, (int)(yi+i+h2-1), c);
-		}
-		
+	public void drawColoredOval(float x, float y, int w, int h, Color c) {
+		shapeRenderer.drawColoredOval(x, y, w, h, c.rgb);
 	}
+	
+	
+	
+	
 
 	private void fillColoredRect(float xf, float yf, int width, int height, int color) {
 		int x = (int) xf + xoffset;
@@ -564,7 +538,7 @@ public class Renderer extends JPanel {
 		drawPixel(x, y, color.rgb);
 	}
 	
-	private void drawPixel(int x, int y, int color) {
+	void drawPixel(int x, int y, int color) {
 		putPixel(x+y*width, color);
 	}
 
@@ -584,16 +558,9 @@ public class Renderer extends JPanel {
 		}
 	}
 
-
 	public void clear() {
 		System.arraycopy(clearPixels, 0, pixels, 0, pixels.length);
 	}
-
-	/*
-	 * @Override protected void paintComponent(Graphics g) {
-	 * super.paintComponent(g); g.drawImage(image, 0, 0, super.getWidth(),
-	 * super.getHeight(), null); }
-	 */
 
 	public void drawParticle(Particle p) {
 		if (p.getX() < 0 || p.getY() < 0 || p.getX() >= width || p.getY() >= height)
@@ -620,9 +587,4 @@ public class Renderer extends JPanel {
 		clipwidth = width;
 		clipheight = height;
 	}
-
-	
-
-	
-
 }

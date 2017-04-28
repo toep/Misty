@@ -21,10 +21,10 @@ public class Particle {
 	public Particle(float x, float y, int motionType, float speed, int duration, Color color) {
 		this.x = x;
 		this.y = y;
-		float randomRad = motionType == MOTION_DIRECTIONAL? direction : (float) (Math.random()*Math.PI*2f);
+		float randomRad = motionType == MOTION_DIRECTIONAL? direction + (float) (Math.random()*.5f-.25f) : (float) (Math.random()*Math.PI*2f);
 		float randSpeed = rand.nextFloat();
-		this.dx = (float) (Util.sin(randomRad)*speed*randSpeed);
-		this.dy = (float) (Util.cos(randomRad)*speed*randSpeed);
+		this.dx = (float) (Util.cos(randomRad)*speed*randSpeed);
+		this.dy = (float) (Util.sin(randomRad)*speed*randSpeed);
 
 		if(motionType == MOTION_RANDOM1) {
 		

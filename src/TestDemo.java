@@ -109,7 +109,7 @@ public class TestDemo extends Game {
 	}
 	
 	@Override
-	public void onScroll(int wheelRotation) {
+	public void mouseWheelMoved(int wheelRotation) {
 		yOffset -= wheelRotation*5;
 		ani.setScale(3f);
 		ani.setRotation(yOffset/50f);

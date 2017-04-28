@@ -16,7 +16,7 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	protected Shape shape;//used for collision detection
 	protected float rotation = 0;
 	protected float scale = 1;
-	protected float rotationPivotX = 0.5f, roationPivotY = 0.5f;//0-1, 0 being top/left and 1 being bottom/right
+	protected float rotationPivotX = 0.5f, rotationPivotY = 0.5f;//0-1, 0 being top/left and 1 being bottom/right
 	protected boolean enabled = true;
 	public abstract void draw(Renderer r);
 	
@@ -43,7 +43,7 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	 */
 	public void setPivot(float rpx, float rpy) {
 		this.rotationPivotX = rpx;
-		this.roationPivotY = rpy;
+		this.rotationPivotY = rpy;
 	}
 	
 	public float getRotationPivotX() {
@@ -51,7 +51,7 @@ public abstract class GameObject implements Comparable<GameObject>, Collidable {
 	}
 	
 	public float getRotationPivotY() {
-		return roationPivotY;
+		return rotationPivotY;
 	}
 	
 	/**

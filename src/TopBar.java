@@ -11,6 +11,7 @@ public class TopBar extends Group {
 	private Label score;
 	
 	private TextField tf;
+	Color backgroundColor = new Color(0xffaaaaaa);
 	public TopBar() {
 		super(0, -24, (int) Game.getCurrent().getWidth(), 24);
 		
@@ -23,7 +24,7 @@ public class TopBar extends Group {
 	
 	@Override
 	public void draw(Renderer r) {
-		r.fillColoredRect(x, y, width, height, Color.temp(0xffaaaaaa));
+		r.fillColoredRect(x, y, width, height, backgroundColor);
 		super.draw(r);
 	}
 	

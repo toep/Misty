@@ -37,7 +37,6 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
 	public void setup() {
 		setClearColor(new Color(0xffaeaeae));
 		
-		setShowFPS(false);
 		textField = new TextField("");
 		textField.setPosition(0, getHeight()-textField.getHeight());
 		textField.setWidth(getWidth());

@@ -38,14 +38,19 @@ public class Color {
 	public final static Color NAVY = new Color(0xff000080);
 	private static Color temp = new Color(0xff000000);
 	
+	private int lightingDarkeningFactor = 10;
+	
 	public Color darken() {
 		int alpha = (rgb >> 24) & 0xFF;
 		int red = (rgb >> 16) & 0xFF;
 		int green = (rgb >> 8) & 0xFF;
 		int blue = rgb & 0xFF;
-		red*=.9f;
-		green*=.9f;
-		blue*=.9f;
+		red-=lightingDarkeningFactor;
+		green-=lightingDarkeningFactor;
+		blue-=lightingDarkeningFactor;
+		if(red < 0) red = 0;
+		if(green < 0) green = 0;
+		if(blue < 0) blue = 0;
 		return new Color(alpha, red, green, blue);
 	}
 	
@@ -54,13 +59,16 @@ public class Color {
 		int red = (rgb >> 16) & 0xFF;
 		int green = (rgb >> 8) & 0xFF;
 		int blue = rgb & 0xFF;
-		red*=1.1f;
-		green*=1.1f;
-		blue*=1.1f;
+		red+=lightingDarkeningFactor;
+		green+=lightingDarkeningFactor;
+		blue+=lightingDarkeningFactor;
+		if(red > 255) red = 255;
+		if(green > 255) green = 255;
+		if(blue > 255) blue = 255;
 		return new Color(alpha, red, green, blue);
 	}
 	
-	public static Color temp(int i) {
+	private static Color temp(int i) {
 		temp.rgb = i;
 		return temp;
 	}

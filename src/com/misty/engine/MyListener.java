@@ -72,7 +72,6 @@ public class MyListener implements MouseListener, MouseMotionListener, MouseWhee
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		
 		if (game.isRunning())
 			game.mouseMoved(e);
 	}

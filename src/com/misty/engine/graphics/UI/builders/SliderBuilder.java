@@ -2,6 +2,7 @@ package com.misty.engine.graphics.UI.builders;
 
 import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.UI.Slider;
+import com.misty.engine.graphics.UI.VerticalSlider;
 
 public class SliderBuilder {
 
@@ -38,6 +39,20 @@ public class SliderBuilder {
 	
 	public Slider create() {
 		Slider slider = new Slider(x, y, w, h, val);
+		slider.setHighlighted(highlighted);
+		slider.setHighlightColor(highlightColor);
+		return slider;
+	}
+
+	public Slider createHorizontal() {
+		Slider slider = new Slider(x, y, w, h, val);
+		slider.setHighlighted(highlighted);
+		slider.setHighlightColor(highlightColor);
+		return slider;
+	}
+	
+	public Slider createVertical() {
+		VerticalSlider slider = new VerticalSlider(x, y, w, h, val);
 		slider.setHighlighted(highlighted);
 		slider.setHighlightColor(highlightColor);
 		return slider;

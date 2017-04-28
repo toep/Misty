@@ -5,8 +5,9 @@ import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
+import java.util.ArrayList;
 
-import com.misty.engine.Game;
+import com.misty.engine.graphics.listeners.AnimationListener;
 import com.misty.utils.Util;
 
 public class Animation extends Sprite {
@@ -17,17 +18,23 @@ public class Animation extends Sprite {
 	private long startTime;
 	private int startFrame = 0;
 	private int endFrame;
-	
+	private boolean running = true;
+	private boolean repeating = true;
+	private ArrayList<AnimationListener> listeners;
 	public Animation(Bitmap[] src) {
 		super(src[0], 0, 0);//x=0,y=0
 		frames = src;
 		index = 0;
 		endFrame = frames.length;
 		startTime = System.currentTimeMillis();
-		setupShape();
+		listeners = new ArrayList<AnimationListener>();
+	}
+	
+	public void addAnimationListener(AnimationListener listener) {
+		this.listeners.add(listener);
 	}
 	/**
-	 * 
+	 * Currently only supports animation with static dimension frames
 	 * @param string location of your image file
 	 * @param w width of each frame in the animation
 	 * @param h height of each frame in the animation
@@ -38,6 +45,11 @@ public class Animation extends Sprite {
 		width = w;
 		height = h;
 	}
+	/**
+	 * unused, used for testing with collision detection
+	 * Should probably be a utility class that takes in a bitmap
+	 */
+	@Deprecated
 	private void setupShape() {
 		Point[] pts = Util.makePoly(bitmap, 10, 20);
 		int[] xs = new int[pts.length];
@@ -47,6 +59,13 @@ public class Animation extends Sprite {
 			ys[i] = pts[i].y;
 		}
 		shape = new Polygon(xs, ys, pts.length);
+	}
+	public void setRepeating(boolean repeating) {
+		this.repeating = repeating;
+	}
+	
+	public void setRunning(boolean running) {
+		this.running = running;
 	}
 	public void setFPS(int a) {
 		fps = a;
@@ -64,6 +83,8 @@ public class Animation extends Sprite {
 	}
 	
 	public void update() {
+		if(!running) return;
+		
 		long time = System.currentTimeMillis();
 		long diff = time - startTime;
 		if(diff > 1000/fps) {
@@ -78,7 +99,17 @@ public class Animation extends Sprite {
 	
 	public void nextFrame() {
 		index++;
-		if(index >= endFrame) index = startFrame;
+		
+		if(index >= endFrame) {
+			if(repeating)
+				index = startFrame;
+			else {
+				running = false;
+				listeners.forEach(e -> e.onCompletion());
+				return;
+			}
+		}
+		
 		bitmap = frames[index];
 	}
 
@@ -94,6 +125,11 @@ public class Animation extends Sprite {
 		af.translate(x, y);
 		
 		return af.createTransformedShape(shape);
+	}
+
+	public void reset() {
+		running = true;
+		index = startFrame;
 	}
 	
 }
