@@ -82,6 +82,11 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
 				p.putString(text);
 				server.sendToAll(p);
 			}
+			else if(client != null) {
+				Packet p = new Packet(4, text.length()+2);
+				p.putString(text);
+				client.sendData(p);
+			}
 		}
 	}
 	private void print(String string) {
@@ -100,6 +105,11 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
 	}
 	@Override
 	public void receiveDataToServer(ClientSocket s, Packet p) {
+		if(p.id == 4) {
+			//a regular message
+			p.toPayload();
+			print(p.getString());
+		}
 	}
 	@Override
 	public void clientHasConnected(ClientSocket cs) {

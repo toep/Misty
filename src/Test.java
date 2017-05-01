@@ -41,7 +41,6 @@ public class Test extends Game {
 	@Override
 	public void mousePressed(int x, int y) {
 		super.mousePressed(x, y);
-		System.out.println(x + " " + y);
 	}
 	public Test(String name, int width, int height, int scale) {
 		super(name, width, height, scale);
@@ -57,22 +56,7 @@ public class Test extends Game {
 		Button bb = new Button("Click me");
 		bb.setTitleColor(new Color(0xff43fe43));
 		bb.addButtonListener(() -> {
-			Runtime runtime = Runtime.getRuntime();
-
-			NumberFormat format = NumberFormat.getInstance();
-
-			StringBuilder sb = new StringBuilder();
-			long maxMemory = runtime.maxMemory();
-			long allocatedMemory = runtime.totalMemory();
-			long freeMemory = runtime.freeMemory();
-			long memorySpent = allocatedMemory-freeMemory;
-			sb.append("free memory: " + format.format(freeMemory / 1024) + "<br/>");
-			sb.append("allocated memory: " + format.format(allocatedMemory / 1024) + "<br/>");
-			sb.append("max memory: " + format.format(maxMemory / 1024) + "<br/>");
-			sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "<br/>");
 			bb.setText("clicked this yo");
-			System.out.println(format.format(memorySpent/1024) + " mb used");
-			Game.getCurrent().stop();
 		});
 		bb.setPosition(90, 140);
 

@@ -6,10 +6,10 @@ class ShapeRenderer {
 	private int width;
 	private int height;
 
-	public ShapeRenderer(Renderer renderer) {
+	public ShapeRenderer(Renderer renderer, int width, int height) {
 		this.renderer = renderer;
-		this.width = renderer.getWidth();
-		this.height = renderer.getHeight();
+		this.width = width;
+		this.height = height;
 	}
 
 	public void fillColoredOval(float x, float y, int w, int h, int c) {
@@ -31,12 +31,14 @@ class ShapeRenderer {
 				start = 0;
 			int lower = (int) (y + i + h2);
 			int upper = (int) (h + y - i - h2 - 1);
+
 			if (upper >= 0 && upper < height)
 				for (int xx = start; xx <= end; xx++) {
 					renderer.drawPixel(xx, upper, c);
 				}
 			if (lower >= 0 && lower < height)
 				for (int xx = start; xx <= end; xx++) {
+
 					renderer.drawPixel(xx, lower, c);
 				}
 

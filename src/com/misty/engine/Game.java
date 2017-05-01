@@ -50,8 +50,8 @@ public abstract class Game implements Runnable {
 	private Frame frame;
 	protected boolean running = false;
 	private boolean[] keys = new boolean[256];
-	private boolean debug = false;
-	private final int KEY_DEBUG = KeyEvent.VK_F3;
+	private boolean debug = false, showFPS = false;
+	private final int KEY_SHOW_FPS = KeyEvent.VK_F3;
 
 	private Thread thread;
 	private MyListener listener;
@@ -115,6 +115,10 @@ public abstract class Game implements Runnable {
 		currentStage = gameStage;
 
 		setup();
+	}
+	
+	public void setDebugMode(boolean debug) {
+		this.debug = debug;
 	}
 
 	private void setupListener() {
@@ -244,19 +248,20 @@ public abstract class Game implements Runnable {
 		drawGameObjects();
 		drawParticles();
 		draw(graphics);
-		if (debug) {
-			drawDebug();
+		if (showFPS) {
+			drawFPS();
 		}
 		graphics.render();
 		deltaframes--;
 		frames++;
 	}
 
-	private void drawDebug() {
+	private void drawFPS() {
 		String fps = "FPS: " + lastFPS + " UPS: " + lastUPS;
 		graphics.fillColoredRect(0, 0, fps.length() * getRenderer().getCurrentFont().getCharacterWidth(), 13,
 				Color.BLACK);
-		graphics.drawString("FPS: " + lastFPS + " UPS: " + lastUPS, 0, 2, Color.WHITE);
+		graphics.drawString(fps, 0, 2, Color.WHITE);
+		if(debug){
 		if (memoryUsedList.size() > 0) {
 			float wid = 100f / memoryUsedList.size();
 			float maxMem = memoryUsedList.stream().max(Integer::compare).get()/40f;
@@ -267,6 +272,7 @@ public abstract class Game implements Runnable {
 			graphics.drawString("" + String.format("%.2f mb", memoryUsedList.get(memoryUsedList.size()-1)/1024f), 5, 45);
 			graphics.drawColoredRect(0, 14, 100, 42, Color.BLACK);
 		}
+	}
 	}
 	
 	private void doMemoryLogging() {
@@ -283,6 +289,14 @@ public abstract class Game implements Runnable {
 		}
 	}
 	
+
+	private void updateActions() {
+		Runnable r;
+		while (!actionQueue.isEmpty()) {
+			r = actionQueue.poll();
+			r.run();
+		}
+	}
 
 	/**
 	 * sets the color the screen should clear with every frame
@@ -388,114 +402,8 @@ public abstract class Game implements Runnable {
 
 	public abstract void update();
 
-	private void updateActions() {
-		Runnable r;
-		while (!actionQueue.isEmpty()) {
-			r = actionQueue.poll();
-			r.run();
-		}
-	}
-
-	void mousePressed(MouseEvent e) {
-		int mouseX = (e.getX() + mouseXOffset) / scale;
-		int mouseY = (e.getY() + mouseYOffset) / scale;
-
-		mousePressed(mouseX, mouseY);
-
-		mouseX -= currentStage.getX();
-		mouseY -= currentStage.getY();
-		if (e.getButton() == MouseEvent.BUTTON1)
-			mousePressed(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage, true);
-
-	}
-
-	void mouseReleased(MouseEvent e) {
-		int mouseX = (e.getX() + mouseXOffset) / scale;
-		int mouseY = (e.getY() + mouseYOffset) / scale;
-		mouseReleased(mouseX, mouseY);
-
-		mouseX -= currentStage.getX();
-		mouseY -= currentStage.getY();
-
-		mouseReleased(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage, true);
-	}
-
-	void keyPressed(KeyEvent e) {
-		if (e.getKeyCode() > 256)
-			return;
-		if (!notifyKeyPressedToNodes(e, currentStage.getChildren())) {
-			keys[e.getKeyCode()] = true;
-			keyPressed(e.getKeyCode());
-		}
-		if (e.getKeyCode() == KEY_DEBUG) {
-			debug = !debug;
-		}
-	}
-
-	void keyReleased(KeyEvent e) {
-		if (e.getKeyCode() > 256)
-			return;
-		keys[e.getKeyCode()] = false;
-		keyReleased(e.getKeyCode());
-
-	}
-
-	void mouseDragged(MouseEvent e) {
-		int mouseX = (e.getX() + mouseXOffset) / scale;
-		int mouseY = (e.getY() + mouseYOffset) / scale;
-		this.mouseX = mouseX;
-		this.mouseY = mouseY;
-		mouseDragged(mouseX, mouseY);
-		mouseX -= currentStage.getX();
-		mouseY -= currentStage.getY();
-		mouseDragged(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage);
-
-	}
-
-	public void mouseDragged(int x, int y) {
-		
-	}
-
-	void mouseMoved(MouseEvent e) {
-		int mouseX = (e.getX() + mouseXOffset) / scale;
-		int mouseY = (e.getY() + mouseYOffset) / scale;
-		this.mouseX = mouseX;
-		this.mouseY = mouseY;
-		mouseMoved(mouseX, mouseY);
-
-		mouseX -= currentStage.getX();
-		mouseY -= currentStage.getY();
-
-		mouseMoved(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage, true);
-	}
-
-	void windowClosed(WindowEvent e) {
-		onWindowClosed();
-	}
-
-	public void onWindowClosed() {
-		
-	}
-
-	void windowClosing(WindowEvent e) {
-		onWindownClosing();
-	}
-
-	void mouseWheelMoved(MouseWheelEvent e) {
-		mouseWheelMoved(e, currentStage.getChildren());
-		mouseWheelMoved(e.getWheelRotation());
-	}
-
-	void mouseEntered(MouseEvent e) {
-		int mouseX = (e.getX() + mouseXOffset) / scale;
-		int mouseY = (e.getY() + mouseYOffset) / scale;
-		this.mouseX = mouseX;
-		this.mouseY = mouseY;
-		mouseEntered(mouseX, mouseY);
-	}
-
-	public void mouseEntered(int x, int y) {
-		
+	public void clearParticles() {
+		particles.clear();
 	}
 
 	private void mousePressed(int mouseX, int mouseY, Group group, boolean in) {
@@ -618,31 +526,47 @@ public abstract class Game implements Runnable {
 		}
 	}
 
-	public void mouseReleased(int x, int y) {
+	/*
+	 *protected mouse/key event methods 
+	 */
+	
+	protected void mouseDragged(int x, int y) {
+		
+	}
+
+	protected void onWindowClosed() {
+		
+	}
+
+	protected void mouseEntered(int x, int y) {
+		
+	}
+
+	protected void mouseReleased(int x, int y) {
 
 	}
 
-	public void mousePressed(int x, int y) {
+	protected void mousePressed(int x, int y) {
 
 	}
 
-	public void keyPressed(int keyCode) {
+	protected void keyPressed(int keyCode) {
 
 	}
 
-	public void keyReleased(int keyCode) {
+	protected void keyReleased(int keyCode) {
 
 	}
 
-	public void mouseMoved(int mouseX, int mouseY) {
+	protected void mouseMoved(int mouseX, int mouseY) {
 
 	}
 
-	public void mouseWheelMoved(int wheelRotation) {
+	protected void mouseWheelMoved(int wheelRotation) {
 
 	}
 
-	public void onWindownClosing() {
+	protected void onWindownClosing() {
 
 	}
 
@@ -681,10 +605,6 @@ public abstract class Game implements Runnable {
 		}
 	}
 
-	public void clearParticles() {
-		particles.clear();
-	}
-
 	private void updateParticles() {
 		Iterator<Particle> it = particles.iterator();
 		while (it.hasNext()) {
@@ -695,5 +615,95 @@ public abstract class Game implements Runnable {
 				p.update();
 			}
 		}
+	}
+
+	void mousePressed(MouseEvent e) {
+		int mouseX = (e.getX() + mouseXOffset) / scale;
+		int mouseY = (e.getY() + mouseYOffset) / scale;
+	
+		mousePressed(mouseX, mouseY);
+	
+		mouseX -= currentStage.getX();
+		mouseY -= currentStage.getY();
+		if (e.getButton() == MouseEvent.BUTTON1)
+			mousePressed(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage, true);
+	
+	}
+
+	void mouseReleased(MouseEvent e) {
+		int mouseX = (e.getX() + mouseXOffset) / scale;
+		int mouseY = (e.getY() + mouseYOffset) / scale;
+		mouseReleased(mouseX, mouseY);
+	
+		mouseX -= currentStage.getX();
+		mouseY -= currentStage.getY();
+	
+		mouseReleased(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage, true);
+	}
+
+	void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() > 256)
+			return;
+		if (!notifyKeyPressedToNodes(e, currentStage.getChildren())) {
+			keys[e.getKeyCode()] = true;
+			keyPressed(e.getKeyCode());
+		}
+		if (e.getKeyCode() == KEY_SHOW_FPS) {
+			showFPS = !showFPS;
+		}
+	}
+
+	void keyReleased(KeyEvent e) {
+		if (e.getKeyCode() > 256)
+			return;
+		keys[e.getKeyCode()] = false;
+		keyReleased(e.getKeyCode());
+	
+	}
+
+	void mouseDragged(MouseEvent e) {
+		int mouseX = (e.getX() + mouseXOffset) / scale;
+		int mouseY = (e.getY() + mouseYOffset) / scale;
+		this.mouseX = mouseX;
+		this.mouseY = mouseY;
+		mouseDragged(mouseX, mouseY);
+		mouseX -= currentStage.getX();
+		mouseY -= currentStage.getY();
+		mouseDragged(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage);
+	
+	}
+
+	void mouseMoved(MouseEvent e) {
+		int mouseX = (e.getX() + mouseXOffset) / scale;
+		int mouseY = (e.getY() + mouseYOffset) / scale;
+		this.mouseX = mouseX;
+		this.mouseY = mouseY;
+		mouseMoved(mouseX, mouseY);
+	
+		mouseX -= currentStage.getX();
+		mouseY -= currentStage.getY();
+	
+		mouseMoved(mouseX - currentStage.getX(), mouseY - currentStage.getY(), currentStage, true);
+	}
+
+	void windowClosed(WindowEvent e) {
+		onWindowClosed();
+	}
+
+	void windowClosing(WindowEvent e) {
+		onWindownClosing();
+	}
+
+	void mouseWheelMoved(MouseWheelEvent e) {
+		mouseWheelMoved(e, currentStage.getChildren());
+		mouseWheelMoved(e.getWheelRotation());
+	}
+
+	void mouseEntered(MouseEvent e) {
+		int mouseX = (e.getX() + mouseXOffset) / scale;
+		int mouseY = (e.getY() + mouseYOffset) / scale;
+		this.mouseX = mouseX;
+		this.mouseY = mouseY;
+		mouseEntered(mouseX, mouseY);
 	}
 }

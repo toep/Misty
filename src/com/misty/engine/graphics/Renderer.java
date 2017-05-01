@@ -81,7 +81,7 @@ public class Renderer extends JPanel {
 		clearPixels = new int[pixels.length];
 		Arrays.fill(clearPixels, clearColor);
 		
-		shapeRenderer = new ShapeRenderer(this);
+		shapeRenderer = new ShapeRenderer(this, w, h);
 	}
 	/**
 	 * sets up the renderer with specified dimensions with scale at 1
