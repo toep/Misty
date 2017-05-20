@@ -1,8 +1,8 @@
 package com.misty.engine.physics;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class CollisionResult {
-	public boolean intersects;
-	public Point intersectionPoint;
+    public boolean intersects;
+    public Point intersectionPoint;
 }

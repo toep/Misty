@@ -2,10 +2,10 @@ package com.misty.engine.network;
 
 public interface ClientListener {
 
-	public void disconnectedFromServer();
-	
-	public void receiveDataToClient(Packet p);
+    void disconnectedFromServer();
 
-	public void onConnection(boolean b, String string);
-	
+    void receiveDataToClient(Packet p);
+
+    void onConnection(boolean b, String string);
+
 }

@@ -7,14 +7,14 @@ import java.nio.ByteBuffer;
 public class ByteBufferBackedOutputStream extends OutputStream {
     ByteBuffer buf;
 
-    public ByteBufferBackedOutputStream(ByteBuffer buf) {
+    ByteBufferBackedOutputStream(ByteBuffer buf) {
         this.buf = buf;
     }
 
-    public void write(byte b) throws IOException {
+    void write(byte b) throws IOException {
         buf.put(b);
     }
-    
+
     public void write(int b) throws IOException {
         buf.putInt(b);
     }
@@ -23,9 +23,9 @@ public class ByteBufferBackedOutputStream extends OutputStream {
             throws IOException {
         buf.put(bytes, off, len);
     }
-    
-    public void clearBuffer() {
-    	buf.clear();
+
+    void clearBuffer() {
+        buf.clear();
     }
 
 }
