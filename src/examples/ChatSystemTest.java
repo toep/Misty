@@ -48,7 +48,7 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
 
         add(chatTable);
         add(textField);
-        //getRenderer().setFont(Font.c64);
+        getRenderer().setFont(Font.c64);
         textField.addReturnListener(() -> {
             print(">" + textField.getText());
             addCommand(textField.getText());
