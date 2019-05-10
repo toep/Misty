@@ -15,10 +15,9 @@ public class Vector2 {
         this.y = p.y;
     }
 
-    public void normalize() {
+    public Vector2 normalize() {
         float mag = magnitude();
-        x /= mag;
-        y /= mag;
+        return new Vector2(x/mag, y/mag);
     }
 
     public Vector2 sub(Vector2 o) {
@@ -33,9 +32,21 @@ public class Vector2 {
         return x * v.x + y * v.y;
     }
 
+    public float cross(Vector2 v) {
+        return this.x*v.y-v.x*this.y;
+    }
+
+    public float dst(Vector2 v) {
+        return (float) Math.sqrt((this.x-v.x)*(this.x-v.x) + (this.y-v.y)*(this.y-v.y));
+    }
+
     public Vector2 mul(float i) {
         return new Vector2(x * i, y * i);
     }
+
+    public Vector2 add(Vector2 v) { return new Vector2(x + v.x, y+v.y);}
+
+    public float angleBetween(Vector2 other) { return (float) (Math.acos(this.dot(other))/(this.magnitude() * other.magnitude()));}
 
     public String toString() {
 

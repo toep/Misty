@@ -590,4 +590,14 @@ public class Renderer extends JPanel {
         clipwidth = width;
         clipheight = height;
     }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
 }
