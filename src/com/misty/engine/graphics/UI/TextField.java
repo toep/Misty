@@ -182,4 +182,8 @@ public class TextField extends Label implements Clickable, Typeable {
         this.alwaysFocus = alwaysFocus;
 
     }
+
+    public void clear() {
+        this.setText("");
+    }
 }
