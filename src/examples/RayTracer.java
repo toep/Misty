@@ -41,7 +41,7 @@ public class RayTracer extends Game {
                 //System.out.println(x + " " + y);
                 Vector3 ray = new Vector3(x, y, -1).normalize();
                // ray = ray.cross(mid);
-                ray = ray.mul(1/(float)Math.cos(ray.angleBetween(mid)));
+               // ray = ray.mul(1/(float)Math.cos(ray.angleBetween(mid)));
                 g.drawPixel(i, j, trace(pos, ray));
 
             }

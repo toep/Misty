@@ -17,6 +17,9 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
     TextField textField;
     Server server;
     Client client;
+    String name;
+
+    private final static byte PACKET_ID_CUSTOM_PACKET = 0;
 
     public static void main(String[] args) {
         new ChatSystemTest("examples.ChatSystemTest", 400, 400).start();
@@ -43,31 +46,38 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
         textField.setWidth(getWidth());
 
         chatTable = new Table(0, 0);
-        chatTable.setFixedHeight((int) (getHeight() - textField.getHeight()));
+        chatTable.setFixedHeight(getHeight() - textField.getHeight());
         chatTable.setWidth(400);
 
         add(chatTable);
         add(textField);
         getRenderer().setFont(Font.c64);
         textField.addReturnListener(() -> {
-            print(">" + textField.getText());
+            print(">" + this.name + ": " + textField.getText());
             addCommand(textField.getText());
-            textField.setText("");
+            textField.clear();
         });
+
+
 
         setFrameRate(15);
     }
 
     private void addCommand(String text) {
         if (text.startsWith("connect") && text.length() > 8) {
-            String ip = text.substring(8);
-            int sepIndex = ip.indexOf(":");
+            String[] content = text.split(" ");
+            if(content.length != 3) {
+                print("connect requires 2 arguments, an ip:port and a username");
+                return;
+            }
+            int sepIndex = content[1].indexOf(":");
             if (sepIndex != -1) {
-                String[] parts = ip.split(":");
-                print("Connecting to " + ip);
-                client = new Client(parts[0], Integer.valueOf(parts[1]));
+                String[] parts = content[1].split(":");
+                print("Connecting to " + parts);
+                client = new Client(parts[0], Integer.valueOf(parts[1]), content[2]);
                 client.addListener(this);
                 client.connect();
+                this.name = content[2];
             } else {
                 print("Wrong format.. make sure to include port (ip:port)");
             }
@@ -78,13 +88,14 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
             server = new Server(port);
             server.addListener(this);
             server.start();
+            this.name = "Server";
         } else {
             if (server != null) {
-                Packet p = new Packet(4, text.length() + 2);
+                Packet p = new Packet(PACKET_ID_CUSTOM_PACKET, text.length() + 2);
                 p.putString(text);
                 server.sendToAll(p);
             } else if (client != null) {
-                Packet p = new Packet(4, text.length() + 2);
+                Packet p = new Packet(PACKET_ID_CUSTOM_PACKET, text.length() + 2);
                 p.putString(text);
                 client.sendData(p);
             }
@@ -100,25 +111,27 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
     }
 
     @Override
-    public void receiveDataToClient(Packet p) {
-        if (p.id == 4) {
+    public void receiveDataFromServer(Packet p) {
+        if (p.id == PACKET_ID_CUSTOM_PACKET) {
             //a regular message
             p.toPayload();
-            print(p.getString());
+            print(">"+p.getString());
         }
     }
 
     @Override
-    public void receiveDataToServer(ClientSocket s, Packet p) {
-        if (p.id == 4) {
+    public void receiveDataFromClient(ClientSocket s, Packet p) {
+        if (p.id == PACKET_ID_CUSTOM_PACKET) {
             //a regular message
             p.toPayload();
-            print(p.getString());
+            print(">" + s.name+ ": " +p.getString());
+            server.sendToAllExcept(s, p);
         }
     }
 
     @Override
     public void clientHasConnected(ClientSocket cs) {
+        print(cs.name + " has connected");
     }
 
     @Override

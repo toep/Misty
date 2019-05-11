@@ -34,6 +34,7 @@ public class Server implements Runnable {
         }
 
         public int id;
+        public String name;
         public Socket socket;
         public boolean handShook = false;
 
@@ -135,7 +136,7 @@ public class Server implements Runnable {
                         System.out.println("a client has connected " + s.getInetAddress());
                         ClientSocket cs = new ClientSocket(Util.randomUniqueID(), s);
                         clients.add(cs);
-                        Game.getCurrent().actionQueue.add(() -> serverlisteners.forEach(e -> e.clientHasConnected(cs)));
+
                         //if(firstConnection()) {
                         //	manageClients();
                         //}
@@ -155,7 +156,7 @@ public class Server implements Runnable {
     }
 
     protected void askForCode(ClientSocket cs) {
-        Packet p = new Packet(4, 3 + 2);
+        Packet p = new Packet(Packet.PACKET_ID_HANDSHAKE_REQ, 3 + 2);
         p.putString("WTC");
         sendDataHandshake(p, cs);
     }
@@ -190,7 +191,7 @@ public class Server implements Runnable {
 
     private void receive(ClientSocket s) {
         new Thread("Receiver " + s.id + " [Server]") {
-            public void run() {
+            public void run() throws BufferUnderflowException {
                 byte[] bytes = new byte[2097152];//2^21
                 int numOfBytesRead = 2097152;
 
@@ -243,16 +244,16 @@ public class Server implements Runnable {
                         if (serverlisteners.size() != 0) {
                             while (bb.hasRemaining()) {
                                 byte id = bb.get();
-                                if (id <= 0) {
-                                    break;
-                                }
+                                //if (id <= 0) {
+                                //    break;
+                                //}
                                 int size = bb.getInt();
                                 //System.out.println("we have a package("+id+") with size " + size);
                                 byte[] payload = new byte[size];
                                 bb.get(payload, 0, size);
                                 Packet p = new Packet(id, size, payload);
-                                if (s.handShook)
-                                    Game.getCurrent().actionQueue.add(() -> serverlisteners.forEach(e -> e.receiveDataToServer(s, p)));
+                                if (s.handShook && p.id >= 0)
+                                    Game.getCurrent().actionQueue.add(() -> serverlisteners.forEach(e -> e.receiveDataFromClient(s, p)));
                                 else {
                                     handleHandshake(s, p);
                                 }
@@ -261,11 +262,9 @@ public class Server implements Runnable {
                         } else {
                             System.out.println("client received data, no listener set..");
                         }
-                    } catch (BufferUnderflowException bue) {
-                        System.err.println("Server Buffer underflow! Ignoring packet..");
                     } catch (Exception e) {
                         System.out.println("a client disconnected unexpectedly!");
-                        e.printStackTrace();
+                       // e.printStackTrace();
                         userDisconnected(s);
 
                         return;
@@ -284,20 +283,25 @@ public class Server implements Runnable {
 
 
     protected void handleHandshake(ClientSocket s, Packet p) {
-        if (p.id == 5) {
-            p.toPayload();
+        System.out.println("server got pid: " + p.id);
+        p.toPayload();
+        if (p.id == Packet.PACKET_ID_HANDSHAKE_RES) {
             if (p.getString().equals(handShakeCode)) {
                 //matching handshake
                 s.handShook = true;
-                Packet idp = new Packet(5, 4);
+                Packet idp = new Packet(Packet.PACKET_ID_HANDSHAKE_OK, 4);
                 idp.putInt(s.id);
-                System.out.println("handshook done, sending accept packet to client");
+                System.out.println("handshake done, sending accept packet to client");
                 sendDataHandshake(idp, s);
             } else {
-                Packet w = new Packet(3, 0);
+                Packet w = new Packet(Packet.PACKET_ID_HANDSHAKE_INVALID, 0);
                 sendDataHandshake(w, s);
                 userDisconnected(s);
             }
+        }
+        else if(p.id == Packet.PACKET_ID_NAME_PACKET) {
+            s.name = p.getString();
+            Game.getCurrent().actionQueue.add(() -> serverlisteners.forEach(e -> e.clientHasConnected(s)));
         }
     }
 
@@ -358,7 +362,6 @@ public class Server implements Runnable {
         sendData(p.data, s);
     }
 
-    @SuppressWarnings("unused")
     private void sendToAllExcept(ClientSocket s, ByteBuffer data) {
         sendToAllExcept(s, data.array());
     }

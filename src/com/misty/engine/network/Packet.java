@@ -3,6 +3,14 @@ package com.misty.engine.network;
 import java.nio.ByteBuffer;
 
 public class Packet {
+
+    //packet ids < 0 are special. Don't use
+    public static final byte PACKET_ID_HANDSHAKE_RES = -5;
+    public static final byte PACKET_ID_HANDSHAKE_REQ = -4;
+    public static final byte PACKET_ID_HANDSHAKE_OK = -3;
+    public static final byte PACKET_ID_HANDSHAKE_INVALID = -2;
+    public static final byte PACKET_ID_NAME_PACKET = -1;
+
     public byte id;
     public int size;
     public byte[] data;

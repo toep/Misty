@@ -27,6 +27,7 @@ public class Client {
     public LinkedBlockingDeque<byte[]> sendQueue = new LinkedBlockingDeque<>();
     private String handShakeCode = "hD0fGz4qGN";
 
+    private String name;
     public void connect() {
         if (!(connect.getState() == Thread.State.NEW))
             createConnectThread();
@@ -39,10 +40,11 @@ public class Client {
         handShakeCode = s;
     }
 
-    public Client(String address, int port) {
+    public Client(String address, int port, String name) {
         socket = new Socket();
         this.address = address;
         this.port = port;
+        this.name = name;
         createConnectThread();
     }
 
@@ -127,16 +129,16 @@ public class Client {
                         if (listeners.size() != 0) {
                             while (bb.hasRemaining()) {
                                 byte id = bb.get();
-                                if (id == -1) {
-                                    break;
-                                }
+                               // if (id == -1) {
+                                //    break;
+                               // }
                                 int size = bb.getInt();
                                 byte[] payload = new byte[size];
                                 bb.get(payload, 0, size);
                                 Packet p = new Packet(id, size, payload);
 
                                 if (handShook)
-                                    Game.getCurrent().actionQueue.add(() -> listeners.forEach(e -> e.receiveDataToClient(p)));
+                                    Game.getCurrent().actionQueue.add(() -> listeners.forEach(e -> e.receiveDataFromServer(p)));
                                 else {
                                     handleHandshake(p);
                                 }
@@ -160,18 +162,23 @@ public class Client {
 
     protected void handleHandshake(Packet p) {
         //we're not ready yet
-        if (p.id == 4) {
+        System.out.println("we got a packet from server: " + p.id);
+        if (p.id == Packet.PACKET_ID_HANDSHAKE_REQ) {
             p.toPayload();
             if (p.getString().equals("WTC")) {
-                Packet codep = new Packet(5, handShakeCode.length() + 2);
+                Packet codep = new Packet(Packet.PACKET_ID_HANDSHAKE_RES, handShakeCode.length() + 2);
                 codep.putString(handShakeCode);
                 sendDataHandshake(codep);
             }
-        } else if (p.id == 5) {
+        } else if (p.id == Packet.PACKET_ID_HANDSHAKE_OK) {
             handShook = true;
             p.toPayload();
             ID = p.getInt();
-        } else if (p.id == 3) {
+            //send client name
+            Packet namePacket = new Packet(Packet.PACKET_ID_NAME_PACKET, this.name.length() + 2);
+            namePacket.putString(this.name);
+            sendDataHandshake(namePacket);
+        } else if (p.id == Packet.PACKET_ID_HANDSHAKE_INVALID) {
             //wrong handshakeKey
             System.err.println("The handshake key from the server is different from yours!");
             try {
@@ -200,7 +207,7 @@ public class Client {
     }
 
     private void sendDataHandshake(Packet p) {
-        sendDataHandshake(p.data);
+        System.out.println("sending packet to server " + p.id);sendDataHandshake(p.data);
     }
 
     public String getStatus() {

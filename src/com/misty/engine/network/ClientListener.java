@@ -4,7 +4,7 @@ public interface ClientListener {
 
     void disconnectedFromServer();
 
-    void receiveDataToClient(Packet p);
+    void receiveDataFromServer(Packet p);
 
     void onConnection(boolean b, String string);
 
