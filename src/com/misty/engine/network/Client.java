@@ -162,11 +162,10 @@ public class Client {
 
     protected void handleHandshake(Packet p) {
         //we're not ready yet
-        System.out.println("we got a packet from server: " + p.id);
         if (p.id == Packet.PACKET_ID_HANDSHAKE_REQ) {
             p.toPayload();
             if (p.getString().equals("WTC")) {
-                Packet codep = new Packet(Packet.PACKET_ID_HANDSHAKE_RES, handShakeCode.length() + 2);
+                Packet codep = new Packet(Packet.PACKET_ID_HANDSHAKE_RES, Packet.sizeNeededForString(handShakeCode));
                 codep.putString(handShakeCode);
                 sendDataHandshake(codep);
             }
@@ -175,8 +174,8 @@ public class Client {
             p.toPayload();
             ID = p.getInt();
             //send client name
-            Packet namePacket = new Packet(Packet.PACKET_ID_NAME_PACKET, this.name.length() + 2);
-            namePacket.putString(this.name);
+            Packet namePacket = new Packet(Packet.PACKET_ID_NAME_PACKET, Packet.sizeNeededForString(name));
+            namePacket.putString(name);
             sendDataHandshake(namePacket);
         } else if (p.id == Packet.PACKET_ID_HANDSHAKE_INVALID) {
             //wrong handshakeKey
@@ -207,7 +206,7 @@ public class Client {
     }
 
     private void sendDataHandshake(Packet p) {
-        System.out.println("sending packet to server " + p.id);sendDataHandshake(p.data);
+        sendDataHandshake(p.data);
     }
 
     public String getStatus() {

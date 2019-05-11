@@ -174,6 +174,8 @@ public class TextField extends Label implements Clickable, Typeable {
         return focus || alwaysFocus;
     }
 
+    public void setFocus(boolean focus) { this.focus = focus; }
+
     public void addReturnListener(ReturnListener rl) {
         returnListeners.add(rl);
     }

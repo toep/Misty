@@ -156,7 +156,8 @@ public class Server implements Runnable {
     }
 
     protected void askForCode(ClientSocket cs) {
-        Packet p = new Packet(Packet.PACKET_ID_HANDSHAKE_REQ, 3 + 2);
+        String whatsTheCode = "WTC";
+        Packet p = new Packet(Packet.PACKET_ID_HANDSHAKE_REQ, Packet.sizeNeededForString(whatsTheCode));
         p.putString("WTC");
         sendDataHandshake(p, cs);
     }
@@ -217,9 +218,10 @@ public class Server implements Runnable {
                         while ((bytesRead = s.socket.getInputStream().read(buf)) > 0) {
                             os.write(buf, 0, bytesRead);
                             numOfBytesRead += bytesRead;
-                            Thread.sleep(5);
-                            // System.out.println("we've read: " + numOfBytesRead + " bytes");
+
+                            //System.out.println("we've read: " + numOfBytesRead + " bytes");
                             if (numOfBytesRead >= sizeOfPacket) break;
+                            Thread.sleep(5);
                         }
                         //numOfBytesRead+=5;//for the header
                         //numOfBytesRead = //s.socket.getInputStream().read(bytes);
@@ -283,7 +285,6 @@ public class Server implements Runnable {
 
 
     protected void handleHandshake(ClientSocket s, Packet p) {
-        System.out.println("server got pid: " + p.id);
         p.toPayload();
         if (p.id == Packet.PACKET_ID_HANDSHAKE_RES) {
             if (p.getString().equals(handShakeCode)) {

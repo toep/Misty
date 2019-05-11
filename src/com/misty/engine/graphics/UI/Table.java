@@ -5,8 +5,10 @@ import com.misty.engine.graphics.Color;
 import com.misty.engine.graphics.GameObject;
 import com.misty.engine.graphics.Group;
 import com.misty.engine.graphics.Renderer;
+import com.misty.listeners.ClickListener;
 import com.misty.utils.Util;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Table extends Group implements Scrollable, Clickable {
@@ -31,6 +33,10 @@ public class Table extends Group implements Scrollable, Clickable {
     private float scrollIntensity = 4f;
     private boolean showSidebar = true;
 
+    private ArrayList<ClickListener> clickListeners = new ArrayList<>();
+
+
+    //TODO: Separate table and scrolling into different objects. Allows for a table click to be registered
     public Table(int x, int y) {
         this.x = x;
         this.y = y;
@@ -148,8 +154,9 @@ public class Table extends Group implements Scrollable, Clickable {
     @Override
     public void onScroll(int ty) {
         if (shouldScroll())
-
             ty *= scrollIntensity;
+        else
+            return;
         if (!hovering)
             return;
 
@@ -175,6 +182,8 @@ public class Table extends Group implements Scrollable, Clickable {
 
     @Override
     public boolean onClickPressed(int x, int y) {
+        clickListeners.forEach(cl -> cl.action());
+
         if (x > this.x + width - sliderWidth && nextY - height != 0) {
             int yPos = Util.map(yScroll, 0, nextY - height, 0, height - 10);
             if (y >= yPos + this.y && y <= yPos + this.y + sliderWidth) {
@@ -182,6 +191,10 @@ public class Table extends Group implements Scrollable, Clickable {
             }
         }
         return false;
+    }
+
+    public void addOnClickListener(ClickListener cl) {
+        clickListeners.add(cl);
     }
 
     @Override

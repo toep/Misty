@@ -11,6 +11,8 @@ public class Packet {
     public static final byte PACKET_ID_HANDSHAKE_INVALID = -2;
     public static final byte PACKET_ID_NAME_PACKET = -1;
 
+    public static final int PACKET_STRING_LENGTH_SIZE = 4;
+
     public byte id;
     public int size;
     public byte[] data;
@@ -44,8 +46,9 @@ public class Packet {
     }
 
     public void putString(String str) {
-        assert (buffer.remaining() >= str.length() + 2);
-        buffer.putShort((short) str.length());
+        assert(str.length() < Integer.MAX_VALUE);
+        assert (buffer.remaining() >= str.length() + 4);
+        buffer.putInt(str.length());
         buffer.put(str.getBytes());
     }
 
@@ -98,7 +101,7 @@ public class Packet {
     }
 
     public String getString() {
-        short len = buffer.getShort();
+        int len = buffer.getInt();
         byte[] str = new byte[len];
         buffer.get(str, buffer.arrayOffset(), len);
         return new String(str);
@@ -145,4 +148,7 @@ public class Packet {
     }
 
 
+    public static int sizeNeededForString(String text) {
+        return text.length() + PACKET_STRING_LENGTH_SIZE;
+    }
 }

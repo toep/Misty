@@ -10,6 +10,8 @@ import com.misty.engine.graphics.font.Font;
 import com.misty.engine.network.*;
 import com.misty.engine.network.Server.ClientSocket;
 
+import java.awt.*;
+
 public class ChatSystemTest extends Game implements ServerListener, ClientListener {
 
 
@@ -48,6 +50,10 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
         chatTable = new Table(0, 0);
         chatTable.setFixedHeight(getHeight() - textField.getHeight());
         chatTable.setWidth(400);
+
+        chatTable.addOnClickListener(() -> {
+            textField.setFocus(true);
+        });
 
         add(chatTable);
         add(textField);
@@ -91,11 +97,11 @@ public class ChatSystemTest extends Game implements ServerListener, ClientListen
             this.name = "Server";
         } else {
             if (server != null) {
-                Packet p = new Packet(PACKET_ID_CUSTOM_PACKET, text.length() + 2);
+                Packet p = new Packet(PACKET_ID_CUSTOM_PACKET, Packet.sizeNeededForString(text));
                 p.putString(text);
                 server.sendToAll(p);
             } else if (client != null) {
-                Packet p = new Packet(PACKET_ID_CUSTOM_PACKET, text.length() + 2);
+                Packet p = new Packet(PACKET_ID_CUSTOM_PACKET, Packet.sizeNeededForString(text));
                 p.putString(text);
                 client.sendData(p);
             }
